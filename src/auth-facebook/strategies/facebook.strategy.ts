@@ -1,0 +1,43 @@
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, Profile } from 'passport-facebook';
+import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../../users/users.service';
+
+@Injectable()
+export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
+    const clientID = configService.get<string>('FACEBOOK_APP_ID');
+    const clientSecret = configService.get<string>('FACEBOOK_APP_SECRET');
+    const callbackURL = configService.get<string>('FACEBOOK_CALLBACK_URL');
+
+    super({
+      clientID: clientID ?? '',
+      clientSecret: clientSecret ?? '',
+      callbackURL: callbackURL ?? '',
+      profileFields: ['id', 'emails', 'name', 'photos'],
+      enableProof: true,
+    });
+  }
+
+  async validate(_accessToken: string, _refreshToken: string, profile: Profile) {
+    const email = profile.emails?.[0]?.value ?? null;
+    const firstName = (profile as any).name?.givenName ?? profile.displayName ?? 'Facebook';
+    const lastName = (profile as any).name?.familyName ?? '';
+    const avatar = profile.photos?.[0]?.value ?? null;
+
+    const user = await this.usersService.upsertSocialUser({
+      provider: 'facebook',
+      providerId: profile.id,
+      email,
+      firstName,
+      lastName,
+      avatar,
+    });
+
+    return user;
+  }
+}

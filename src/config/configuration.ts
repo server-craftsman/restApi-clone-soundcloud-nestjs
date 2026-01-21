@@ -33,4 +33,19 @@ export default () => ({
     ffmpegPath: process.env.FFMPEG_PATH ?? ffmpegStatic ?? undefined,
     ffprobePath: process.env.FFPROBE_PATH ?? ffprobeInstaller?.path ?? undefined,
   },
+  oauth: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    },
+    facebook: {
+      appId: process.env.FACEBOOK_APP_ID,
+      appSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackUrl: process.env.FACEBOOK_CALLBACK_URL,
+    },
+  },
+  cors: {
+    origin: process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['http://localhost:3000'],
+  },
 });

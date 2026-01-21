@@ -5,6 +5,7 @@ import {
   Headers,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -14,12 +15,26 @@ import { memoryStorage } from 'multer';
 import { Response } from 'express';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { ApiBody, ApiConsumes, ApiProduces, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiProduces, ApiResponse, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Tracks')
 @Controller('tracks')
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
+  @Get()
+  @ApiResponse({ status: 200, description: 'List all tracks' })
+  @ApiQuery({ name: 'limit', type: 'number', required: false, example: 10 })
+  @ApiQuery({ name: 'offset', type: 'number', required: false, example: 0 })
+  async listTracks(
+    @Query('limit') limit: string = '10',
+    @Query('offset') offset: string = '0',
+  ) {
+    const [tracks, total] = await this.tracksService.findAll(
+      parseInt(limit),
+      parseInt(offset),
+    );
+    return { data: tracks, total, limit: parseInt(limit), offset: parseInt(offset) };
+  }
 
   @Post()
   @UseInterceptors(

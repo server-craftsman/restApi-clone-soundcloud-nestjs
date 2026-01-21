@@ -18,4 +18,12 @@ export const envValidationSchema = Joi.object({
   MINIO_USE_SSL: Joi.boolean().default(false),
   FFMPEG_PATH: Joi.string().optional(),
   FFPROBE_PATH: Joi.string().optional(),
+  GOOGLE_CLIENT_ID: Joi.string().required(),
+  GOOGLE_CLIENT_SECRET: Joi.string().required(),
+  GOOGLE_CALLBACK_URL: Joi.string().required(),
+  FACEBOOK_APP_ID: Joi.string().required(),
+  FACEBOOK_APP_SECRET: Joi.string().required(),
+  FACEBOOK_CALLBACK_URL: Joi.string().required(),
+  JWT_SECRET: Joi.string().required(),
+  CORS_ORIGIN: Joi.string().default('http://localhost:3000,http://localhost:8888'),
 });

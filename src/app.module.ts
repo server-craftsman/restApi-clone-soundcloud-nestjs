@@ -7,6 +7,13 @@ import { TracksModule } from './tracks';
 import { QueueModule } from './queue';
 import { MediaModule } from './media';
 import { HomeModule } from './home';
+import { UsersModule } from './users';
+import { AuthModule } from './auth';
+import { AuthGoogleModule } from './auth-google';
+import { AuthFacebookModule } from './auth-facebook';
+import { MailModule } from './mail';
+import { MailerModule } from './mailer';
+import { OAuthTestModule } from './oauth-test/oauth-test.module';
 
 @Module({
   imports: [
@@ -18,9 +25,16 @@ import { HomeModule } from './home';
     DatabaseModule,
     QueueModule,
     StorageModule,
+    MailerModule,
+    UsersModule,
+    AuthModule,
+    AuthGoogleModule,
+    AuthFacebookModule,
+    MailModule,
     TracksModule,
     MediaModule,
     HomeModule,
+    OAuthTestModule,
   ],
 })
 export class AppModule {}

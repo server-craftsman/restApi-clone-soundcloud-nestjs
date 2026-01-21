@@ -1,13 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { randomUUID } from 'node:crypto';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { Track, TrackStatus } from './entities/track.entity';
 import { StorageService } from '../storage/storage.service';
 import { MEDIA_TRANSCODE_JOB, MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
+import { Track, TrackStatus } from './domain/track.entity';
+import { TrackRepository } from './infrastructure/persistence/relational/track.repository';
 
 export interface StreamPayload {
   stream: NodeJS.ReadableStream;
@@ -22,8 +21,7 @@ export class TracksService {
   private readonly logger = new Logger(TracksService.name);
 
   constructor(
-    @InjectRepository(Track)
-    private readonly trackRepository: Repository<Track>,
+     private readonly trackRepository: TrackRepository,
     private readonly storageService: StorageService,
     @InjectQueue(MEDIA_TRANSCODE_QUEUE)
     private readonly mediaQueue: Queue,
@@ -68,6 +66,10 @@ export class TracksService {
       return track.transcodedObjectKey;
     }
     return track.objectKey;
+  }
+
+  async findAll(limit: number = 10, offset: number = 0): Promise<[Track[], number]> {
+    return this.trackRepository.findAll(limit, offset);
   }
 
   async buildStream(id: string, rangeHeader?: string): Promise<StreamPayload> {
