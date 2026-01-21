@@ -73,7 +73,8 @@ export class TracksService {
   async buildStream(id: string, rangeHeader?: string): Promise<StreamPayload> {
     const track = await this.findOneOrFail(id);
     const objectKey = this.resolveObjectKey(track);
-    const stat = await this.storageService.statObject(objectKey);
+    const stat = await this.storageService.statObject(objectKey); 
+    // get info size, metadata
     const size = Number(stat.size);
 
     if (rangeHeader) {
@@ -88,6 +89,7 @@ export class TracksService {
       };
     }
 
+    // gọi storage service để lấy full stream
     const stream = await this.storageService.getObjectStream(objectKey);
     return {
       stream,

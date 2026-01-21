@@ -3,6 +3,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MEDIA_TRANSCODE_QUEUE } from './queue.constants';
 
+// All the queue will be configured here
+// Using Redis as message broker
 @Module({
   imports: [
     ConfigModule,

@@ -37,6 +37,7 @@ export class MediaTranscodeProcessor extends WorkerHost {
     }
   }
 
+//   handle job convert audio -> convert file audio to mp3 using ffmpeg
   async process(job: Job<TranscodeJob>): Promise<void> {
     const { trackId, sourceKey, targetKey } = job.data;
     const track = await this.trackRepository.findOne({ where: { id: trackId } });
@@ -48,20 +49,23 @@ export class MediaTranscodeProcessor extends WorkerHost {
     await this.trackRepository.update(trackId, { status: TrackStatus.Processing });
 
     try {
+        // path original file in storage
       const sourceStream = await this.storageService.getObjectStream(sourceKey);
       const passThrough = new PassThrough();
+    //   output of ffmpeg is a stream
       const uploadPromise = this.storageService.uploadStream(targetKey, passThrough, 'audio/mpeg');
 
+      // convert to mp3 using ffmpeg
       await new Promise<void>((resolve, reject) => {
         ffmpeg(sourceStream)
           .audioCodec('libmp3lame')
           .format('mp3')
           .on('error', (error) => reject(error))
-          .on('end', () => resolve())
+          .on('end', () => resolve()) // when ffmpeg finished
           .pipe(passThrough, { end: true });
       });
 
-      await uploadPromise;
+      await uploadPromise; // wait until upload finished
       await this.trackRepository.update(trackId, {
         status: TrackStatus.Ready,
         transcodedObjectKey: targetKey,
