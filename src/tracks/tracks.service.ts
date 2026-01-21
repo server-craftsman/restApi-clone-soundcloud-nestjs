@@ -5,9 +5,9 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { StorageService } from '../storage/storage.service';
 import { MEDIA_TRANSCODE_JOB, MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
-import { Track, TrackStatus } from './domain/track';
+import { Track } from './domain/track';
 import { TrackRepository } from './infrastructure/persistence/relational/track.repository';
-
+import { TrackStatus } from '../enums';
 export interface StreamPayload {
   stream: NodeJS.ReadableStream;
   start: number;

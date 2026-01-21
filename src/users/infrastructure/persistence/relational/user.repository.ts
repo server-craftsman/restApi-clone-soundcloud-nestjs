@@ -3,13 +3,14 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from '../../../domain/user';
 import { UserEntity } from './entities/user.entity';
 import { UserMapper } from './mappers/user.mapper';
-import { IUserRepository } from './repositories/user.repository.interface';
+import { UserRepositoryAbstract } from './repositories/user.repository.abstract';
 
 @Injectable()
-export class UserRepository implements IUserRepository {
+export class UserRepository extends UserRepositoryAbstract {
   private readonly repository: Repository<UserEntity>;
 
   constructor(private dataSource: DataSource, private mapper: UserMapper) {
+    super();
     this.repository = dataSource.getRepository(UserEntity);
   }
 

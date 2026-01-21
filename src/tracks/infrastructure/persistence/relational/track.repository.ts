@@ -3,13 +3,14 @@ import { DataSource, Repository } from 'typeorm';
 import { Track } from '../../../domain/track';
 import { TrackEntity } from './entities/track.entity';
 import { TrackMapper } from './mappers/track.mapper';
-import { ITrackRepository } from './repositories/track.repository.interface';
+import { TrackRepositoryAbstract } from './repositories/track.repository.abstract';
 
 @Injectable()
-export class TrackRepository implements ITrackRepository {
+export class TrackRepository extends TrackRepositoryAbstract {
   private readonly repository: Repository<TrackEntity>;
 
   constructor(private dataSource: DataSource, private mapper: TrackMapper) {
+    super();
     this.repository = dataSource.getRepository(TrackEntity);
   }
 

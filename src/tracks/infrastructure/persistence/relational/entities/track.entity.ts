@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { TrackStatus } from '../../../../domain/track';
+import { TrackStatus } from '../../../../../enums';
 
 @Entity({ name: 'tracks' })
 export class TrackEntity {

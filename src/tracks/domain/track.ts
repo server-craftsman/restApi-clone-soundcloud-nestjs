@@ -1,9 +1,4 @@
-export enum TrackStatus {
-  Uploaded = 'uploaded',
-  Processing = 'processing',
-  Ready = 'ready',
-  Failed = 'failed',
-}
+import { TrackStatus } from '../../enums';
 
 export interface Track {
   id: string;

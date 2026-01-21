@@ -6,7 +6,7 @@ import { Job } from 'bullmq';
 import { Repository } from 'typeorm';
 import { PassThrough } from 'node:stream';
 import * as ffmpeg from 'fluent-ffmpeg';
-import { TrackStatus } from '../tracks/domain/track';
+import { TrackStatus } from '../enums';
 import { TrackEntity } from '../tracks/infrastructure/persistence/relational/entities/track.entity';
 import { StorageService } from '../storage/storage.service';
 import { MEDIA_TRANSCODE_JOB, MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
