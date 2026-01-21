@@ -5,7 +5,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { StorageService } from '../storage/storage.service';
 import { MEDIA_TRANSCODE_JOB, MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
-import { Track, TrackStatus } from './domain/track.entity';
+import { Track, TrackStatus } from './domain/track';
 import { TrackRepository } from './infrastructure/persistence/relational/track.repository';
 
 export interface StreamPayload {
@@ -34,7 +34,7 @@ export class TracksService {
     const objectKey = `${randomUUID()}-${file.originalname}`;
     await this.storageService.uploadBuffer(objectKey, file.buffer, file.mimetype);
 
-    const track = this.trackRepository.create({
+    const track = await this.trackRepository.create({
       title: dto.title,
       description: dto.description,
       objectKey,
@@ -42,19 +42,18 @@ export class TracksService {
       size: file.size,
       status: TrackStatus.Uploaded,
     });
-    const saved = await this.trackRepository.save(track);
 
     await this.mediaQueue.add(MEDIA_TRANSCODE_JOB, {
-      trackId: saved.id,
+      trackId: track.id,
       sourceKey: objectKey,
-      targetKey: `${saved.id}.mp3`,
+      targetKey: `${track.id}.mp3`,
     });
 
-    return saved;
+    return track;
   }
 
   async findOneOrFail(id: string): Promise<Track> {
-    const track = await this.trackRepository.findOne({ where: { id } });
+    const track = await this.trackRepository.findById(id);
     if (!track) {
       throw new NotFoundException('Track not found');
     }

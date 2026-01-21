@@ -13,7 +13,6 @@ import { AuthGoogleModule } from './auth-google';
 import { AuthFacebookModule } from './auth-facebook';
 import { MailModule } from './mail';
 import { MailerModule } from './mailer';
-import { OAuthTestModule } from './oauth-test/oauth-test.module';
 
 @Module({
   imports: [
@@ -34,7 +33,6 @@ import { OAuthTestModule } from './oauth-test/oauth-test.module';
     TracksModule,
     MediaModule,
     HomeModule,
-    OAuthTestModule,
   ],
 })
 export class AppModule {}

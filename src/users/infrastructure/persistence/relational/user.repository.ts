@@ -1,48 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../../../domain/user';
-import { CreateUserDto } from '../../../dto/create-user.dto';
-import { UpdateUserDto } from '../../../dto/update-user.dto';
+import { UserEntity } from './entities/user.entity';
+import { UserMapper } from './mappers/user.mapper';
+import { IUserRepository } from './repositories/user.repository.interface';
 
 @Injectable()
-export class UserRepository {
-  constructor(
-    @InjectRepository(User)
-    private readonly repository: Repository<User>,
-  ) {}
+export class UserRepository implements IUserRepository {
+  private readonly repository: Repository<UserEntity>;
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const user = this.repository.create(dto);
-    return this.repository.save(user);
+  constructor(private dataSource: DataSource, private mapper: UserMapper) {
+    this.repository = dataSource.getRepository(UserEntity);
+  }
+
+  async create(user: Partial<User>): Promise<User> {
+    const entity = this.mapper.toEntity(user);
+    const saved = await this.repository.save(entity);
+    return this.mapper.toDomain(saved);
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.repository.findOne({ where: { id } });
+    const entity = await this.repository.findOne({ where: { id } });
+    return entity ? this.mapper.toDomain(entity) : null;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.repository.findOne({ where: { email } });
+    const entity = await this.repository.findOne({ where: { email } });
+    return entity ? this.mapper.toDomain(entity) : null;
   }
 
   async findByProvider(provider: string, providerId: string): Promise<User | null> {
-    return this.repository.findOne({ where: { provider, providerId } });
+    const entity = await this.repository.findOne({ where: { provider, providerId } });
+    return entity ? this.mapper.toDomain(entity) : null;
   }
 
   async findAll(limit = 10, offset = 0): Promise<[User[], number]> {
-    return this.repository.findAndCount({ take: limit, skip: offset });
+    const [entities, count] = await this.repository.findAndCount({
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
+    return [this.mapper.toDomainArray(entities), count];
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<User> {
-    await this.repository.update(id, dto);
-    const user = await this.findById(id);
-    if (!user) throw new NotFoundException('User not found');
-    return user;
-  }
-
-  async createSocialUser(payload: Partial<User>): Promise<User> {
-    const user = this.repository.create(payload);
-    return this.repository.save(user);
+  async update(id: string, user: Partial<User>): Promise<User> {
+    await this.repository.update(id, user);
+    const updated = await this.repository.findOne({ where: { id } });
+    if (!updated) throw new NotFoundException('User not found');
+    return this.mapper.toDomain(updated);
   }
 
   async delete(id: string): Promise<void> {

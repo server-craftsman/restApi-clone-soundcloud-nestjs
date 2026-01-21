@@ -1,40 +1,33 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-
-@Entity({ name: 'users' })
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column({ type: 'varchar', length: 255, unique: true })
-  email!: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  firstName!: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  lastName!: string;
-
-  @Column({ type: 'varchar', length: 64, nullable: true })
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   provider?: string | null;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
   providerId?: string | null;
-
-  @Column({ type: 'varchar', length: 512, nullable: true })
   password?: string | null;
-
-  @Column({ type: 'varchar', length: 512, nullable: true })
   avatar?: string | null;
-
-  @Column({ type: 'text', nullable: true })
   bio?: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  @Column({ type: 'boolean', default: false })
+export class UserDomain implements User {
+  id!: string;
+  email!: string;
+  firstName!: string;
+  lastName!: string;
+  provider?: string | null;
+  providerId?: string | null;
+  password?: string | null;
+  avatar?: string | null;
+  bio?: string | null;
   isActive!: boolean;
-
-  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  constructor(partial: Partial<User>) {
+    Object.assign(this, partial);
+  }
 }

@@ -1,14 +1,8 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-
-export enum TrackStatus {
-  Uploaded = 'uploaded',
-  Processing = 'processing',
-  Ready = 'ready',
-  Failed = 'failed',
-}
+import { TrackStatus } from '../../../../domain/track';
 
 @Entity({ name: 'tracks' })
-export class Track {
+export class TrackEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

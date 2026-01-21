@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../../../domain/user';
+import { UserEntity } from './entities/user.entity';
 import { UserRepository } from './user.repository';
+import { UserMapper } from './mappers/user.mapper';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
-  providers: [UserRepository],
+  imports: [TypeOrmModule.forFeature([UserEntity])],
+  providers: [UserMapper, UserRepository],
   exports: [UserRepository],
 })
 export class RelationalUserPersistenceModule {}

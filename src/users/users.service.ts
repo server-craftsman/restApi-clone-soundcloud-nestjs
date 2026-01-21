@@ -64,7 +64,7 @@ export class UsersService {
       }
     }
 
-    return this.userRepository.createSocialUser({
+    return this.userRepository.create({
       email: payload.email ?? `${payload.providerId}@${payload.provider}.local`,
       firstName: payload.firstName ?? payload.provider,
       lastName: payload.lastName ?? 'user',
