@@ -1,98 +1,165 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SoundCloud Clone REST API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend REST API for a SoundCloud-like audio streaming platform built with NestJS, PostgreSQL, MinIO, and Redis.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **Audio Upload**: Multipart file upload with metadata (title, description)
+- **HTTP Range Streaming**: Partial content streaming (206) for efficient audio playback
+- **Background Transcoding**: Async conversion to MP3 using ffmpeg via BullMQ
+- **Cloud Storage**: MinIO (S3-compatible) for scalable audio storage
+- **TypeORM**: PostgreSQL integration with auto-migrations
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Architecture
 
-## Project setup
+### Clean Architecture Layers
+
+1. **Infrastructure**
+   - [src/config](src/config): Environment validation & typed configuration
+   - [src/database](src/database): TypeORM module wiring
+   - [src/storage](src/storage): MinIO adapter service
+   - [src/queue](src/queue): BullMQ Redis queue setup
+
+2. **Domain**
+   - [src/tracks/entities](src/tracks/entities): Track entity with status enum
+
+3. **Application**
+   - [src/tracks](src/tracks): Tracks module (controller, service, DTOs)
+   - [src/media](src/media): Media processor for async ffmpeg jobs
+
+4. **Presentation**
+   - [src/tracks/tracks.controller.ts](src/tracks/tracks.controller.ts): Upload & stream endpoints
+
+## Tech Stack
+
+- **Framework**: NestJS 11
+- **Database**: PostgreSQL (via TypeORM)
+- **Cache/Queue**: Redis (via BullMQ)
+- **Storage**: MinIO (S3-compatible)
+- **Media**: ffmpeg (via fluent-ffmpeg + ffmpeg-static)
+- **Validation**: class-validator + class-transformer
+
+## Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose (for Postgres, Redis, MinIO)
+
+## Setup
+
+1. **Install dependencies**
+
+   ```bash
+   yarn install
+   ```
+
+2. **Configure environment**
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your credentials
+   ```
+
+3. **Start infrastructure** (Docker Compose recommended)
+
+   ```bash
+   docker compose up -d postgres redis minio
+   ```
+
+   Or manually:
+   - PostgreSQL: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=soundcloud123 -e POSTGRES_DB=soundcloud postgres:16`
+   - Redis: `docker run -d -p 6379:6379 redis:7`
+   - MinIO: `docker run -d -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data --console-address ":9001"`
+
+4. **Run migrations** (TypeORM auto-sync enabled in dev)
+   ```bash
+   yarn start:dev
+   ```
+
+## API Endpoints
+
+### Upload Track
 
 ```bash
-$ yarn install
+POST /tracks
+Content-Type: multipart/form-data
+
+Form fields:
+- file: audio file (max 100MB)
+- title: string
+- description: string (optional)
 ```
 
-## Compile and run the project
+### Stream Track
 
 ```bash
-# development
-$ yarn run start
+GET /tracks/:id/stream
+Headers:
+- Range: bytes=0-1023 (optional, for partial content)
 
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+Response:
+- 200 OK (full content)
+- 206 Partial Content (range request)
 ```
 
-## Run tests
+## Development
 
 ```bash
-# unit tests
-$ yarn run test
+# Development with watch mode
+yarn start:dev
 
-# e2e tests
-$ yarn run test:e2e
+# Build
+yarn build
 
-# test coverage
-$ yarn run test:cov
+# Production
+yarn start:prod
+
+# Tests
+yarn test
+yarn test:e2e
 ```
 
-## Deployment
+## Project Structure
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+```
+src/
+├── config/               # Environment validation & config loader
+│   ├── configuration.ts
+│   └── env.validation.ts
+├── database/             # TypeORM module
+│   └── database.module.ts
+├── storage/              # MinIO adapter
+│   ├── storage.module.ts
+│   └── storage.service.ts
+├── queue/                # BullMQ setup
+│   ├── queue.module.ts
+│   └── queue.constants.ts
+├── tracks/               # Tracks domain
+│   ├── entities/
+│   │   └── track.entity.ts
+│   ├── dto/
+│   │   └── create-track.dto.ts
+│   ├── tracks.controller.ts
+│   ├── tracks.service.ts
+│   └── tracks.module.ts
+├── media/                # Background processing
+│   ├── media.processor.ts
+│   └── media.module.ts
+├── app.module.ts
+└── main.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Next Steps
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- [ ] Add authentication (JWT)
+- [ ] Add users/profiles module
+- [ ] Implement playlists
+- [ ] Add comments & likes
+- [ ] Implement search & discovery
+- [ ] Add waveform generation
+- [ ] Implement social features (follows, feed)
+- [ ] Add admin/moderation tools
+- [ ] Deploy to production (AWS/GCP)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
