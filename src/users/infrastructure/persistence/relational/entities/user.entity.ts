@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { SubscriptionPlan } from '../../../../../enums';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -28,6 +35,16 @@ export class UserEntity {
 
   @Column({ type: 'text', nullable: true })
   bio?: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: SubscriptionPlan,
+    default: SubscriptionPlan.Free,
+  })
+  subscriptionPlan!: SubscriptionPlan;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  subscriptionExpiresAt?: Date | null;
 
   @Column({ type: 'boolean', default: false })
   isActive!: boolean;

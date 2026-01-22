@@ -7,6 +7,10 @@ export abstract class TrackRepositoryAbstract {
   abstract create(track: Partial<Track>): Promise<Track>;
   abstract update(id: string, track: Partial<Track>): Promise<Track>;
   abstract updateStatus(id: string, status: string): Promise<void>;
-  abstract updateTranscodedKey(id: string, transcodedObjectKey: string): Promise<void>;
+  abstract updateTranscodedKey(
+    id: string,
+    transcodedObjectKey: string,
+  ): Promise<void>;
+  abstract getTotalDurationSecondsByUser(userId: string): Promise<number>;
   abstract delete(id: string): Promise<void>;
 }

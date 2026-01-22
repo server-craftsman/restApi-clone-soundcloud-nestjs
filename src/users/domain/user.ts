@@ -1,3 +1,5 @@
+import { SubscriptionPlan } from '../../enums';
+
 export interface User {
   id: string;
   email: string;
@@ -8,6 +10,8 @@ export interface User {
   password?: string | null;
   avatar?: string | null;
   bio?: string | null;
+  subscriptionPlan: SubscriptionPlan;
+  subscriptionExpiresAt?: Date | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +27,8 @@ export class UserDomain implements User {
   password?: string | null;
   avatar?: string | null;
   bio?: string | null;
+  subscriptionPlan!: SubscriptionPlan;
+  subscriptionExpiresAt?: Date | null;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

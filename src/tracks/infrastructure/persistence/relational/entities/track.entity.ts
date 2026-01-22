@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { TrackStatus } from '../../../../../enums';
 
 @Entity({ name: 'tracks' })
@@ -12,10 +18,18 @@ export class TrackEntity {
   @Column({ type: 'text', nullable: true })
   description?: string | null;
 
+  @Column({ name: 'user_id', type: 'uuid' })
+  userId!: string;
+
   @Column({ name: 'object_key', type: 'varchar', length: 512 })
   objectKey!: string;
 
-  @Column({ name: 'transcoded_object_key', type: 'varchar', length: 512, nullable: true })
+  @Column({
+    name: 'transcoded_object_key',
+    type: 'varchar',
+    length: 512,
+    nullable: true,
+  })
   transcodedObjectKey?: string | null;
 
   @Column({ name: 'content_type', type: 'varchar', length: 128 })
@@ -30,7 +44,16 @@ export class TrackEntity {
   })
   size!: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null | undefined) => value,
+      from: (value: string | null) => (value !== null ? Number(value) : null),
+    },
+  })
   durationSeconds?: number | null;
 
   @Column({ type: 'enum', enum: TrackStatus, default: TrackStatus.Uploaded })

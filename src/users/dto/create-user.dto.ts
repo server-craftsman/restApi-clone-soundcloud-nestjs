@@ -1,5 +1,15 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SubscriptionPlan } from '../../enums';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -29,4 +39,14 @@ export class CreateUserDto {
   @IsString()
   @MaxLength(512)
   bio?: string;
+
+  @ApiPropertyOptional({ enum: SubscriptionPlan })
+  @IsOptional()
+  @IsEnum(SubscriptionPlan)
+  subscriptionPlan?: SubscriptionPlan;
+
+  @ApiPropertyOptional({ description: 'ISO date when plan expires' })
+  @IsOptional()
+  @IsDateString()
+  subscriptionExpiresAt?: string;
 }

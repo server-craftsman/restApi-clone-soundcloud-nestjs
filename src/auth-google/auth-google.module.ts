@@ -9,7 +9,12 @@ import { AuthGoogleController } from './auth-google.controller';
 import { AuthGoogleService } from './auth-google.service';
 
 @Module({
-  imports: [ConfigModule, PassportModule.register({ session: false }), AuthModule, UsersModule],
+  imports: [
+    ConfigModule,
+    PassportModule.register({ session: false }),
+    AuthModule,
+    UsersModule,
+  ],
   controllers: [AuthGoogleController],
   providers: [GoogleStrategy, GoogleAuthGuard, AuthGoogleService],
   exports: [GoogleAuthGuard],

@@ -23,9 +23,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(_accessToken: string, _refreshToken: string, profile: Profile) {
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: Profile,
+  ) {
     const email = profile.emails?.[0]?.value ?? null;
-    const firstName = profile.name?.givenName ?? profile.displayName ?? 'Google';
+    const firstName =
+      profile.name?.givenName ?? profile.displayName ?? 'Google';
     const lastName = profile.name?.familyName ?? '';
     const avatar = profile.photos?.[0]?.value ?? null;
 

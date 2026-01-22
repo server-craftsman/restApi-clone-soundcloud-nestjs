@@ -9,6 +9,7 @@ export class TrackMapper {
       id: entity.id,
       title: entity.title,
       description: entity.description,
+      userId: entity.userId,
       objectKey: entity.objectKey,
       transcodedObjectKey: entity.transcodedObjectKey,
       contentType: entity.contentType,
@@ -27,6 +28,6 @@ export class TrackMapper {
   }
 
   toDomainArray(entities: TrackEntity[]): Track[] {
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 }

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class HomeService {
-//   constructor(private configService: ConfigService) {}
+  //   constructor(private configService: ConfigService) {}
 
   appInfo() {
     return 'Server API is running.....';

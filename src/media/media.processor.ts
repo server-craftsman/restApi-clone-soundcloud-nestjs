@@ -9,7 +9,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import { TrackStatus } from '../enums';
 import { TrackEntity } from '../tracks/infrastructure/persistence/relational/entities/track.entity';
 import { StorageService } from '../storage/storage.service';
-import { MEDIA_TRANSCODE_JOB, MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
+import { MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
 
 interface TranscodeJob {
   trackId: string;
@@ -29,7 +29,10 @@ export class MediaTranscodeProcessor extends WorkerHost {
     private readonly configService: ConfigService,
   ) {
     super();
-    const mediaConfig = this.configService.get('media') as { ffmpegPath?: string; ffprobePath?: string };
+    const mediaConfig = this.configService.get('media') as {
+      ffmpegPath?: string;
+      ffprobePath?: string;
+    };
     if (mediaConfig?.ffmpegPath) {
       ffmpeg.setFfmpegPath(mediaConfig.ffmpegPath);
     }
@@ -38,23 +41,31 @@ export class MediaTranscodeProcessor extends WorkerHost {
     }
   }
 
-//   handle job convert audio -> convert file audio to mp3 using ffmpeg
+  //   handle job convert audio -> convert file audio to mp3 using ffmpeg
   async process(job: Job<TranscodeJob>): Promise<void> {
     const { trackId, sourceKey, targetKey } = job.data;
-    const track = await this.trackRepository.findOne({ where: { id: trackId } });
+    const track = await this.trackRepository.findOne({
+      where: { id: trackId },
+    });
     if (!track) {
       this.logger.warn(`Track ${trackId} not found for transcode`);
       return;
     }
 
-    await this.trackRepository.update(trackId, { status: TrackStatus.Processing });
+    await this.trackRepository.update(trackId, {
+      status: TrackStatus.Processing,
+    });
 
     try {
-        // path original file in storage
+      // path original file in storage
       const sourceStream = await this.storageService.getObjectStream(sourceKey);
       const passThrough = new PassThrough();
-    //   output of ffmpeg is a stream
-      const uploadPromise = this.storageService.uploadStream(targetKey, passThrough, 'audio/mpeg');
+      //   output of ffmpeg is a stream
+      const uploadPromise = this.storageService.uploadStream(
+        targetKey,
+        passThrough,
+        'audio/mpeg',
+      );
 
       // convert to mp3 using ffmpeg
       await new Promise<void>((resolve, reject) => {
@@ -74,7 +85,9 @@ export class MediaTranscodeProcessor extends WorkerHost {
       this.logger.log(`Track ${trackId} transcoded to ${targetKey}`);
     } catch (error) {
       this.logger.error(`Failed to transcode track ${trackId}`, error as Error);
-      await this.trackRepository.update(trackId, { status: TrackStatus.Failed });
+      await this.trackRepository.update(trackId, {
+        status: TrackStatus.Failed,
+      });
       throw error;
     }
   }

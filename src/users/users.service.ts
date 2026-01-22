@@ -3,13 +3,20 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './domain/user';
 import { UserRepository } from './infrastructure/persistence/relational/user.repository';
+import { SubscriptionPlan } from '../enums';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async create(dto: CreateUserDto): Promise<User> {
-    return this.userRepository.create(dto);
+    return this.userRepository.create({
+      ...dto,
+      subscriptionPlan: dto.subscriptionPlan ?? SubscriptionPlan.Free,
+      subscriptionExpiresAt: dto.subscriptionExpiresAt
+        ? new Date(dto.subscriptionExpiresAt)
+        : null,
+    });
   }
 
   async findById(id: string): Promise<User | null> {
@@ -20,7 +27,10 @@ export class UsersService {
     return this.userRepository.findByEmail(email);
   }
 
-  async findByProvider(provider: string, providerId: string): Promise<User | null> {
+  async findByProvider(
+    provider: string,
+    providerId: string,
+  ): Promise<User | null> {
     return this.userRepository.findByProvider(provider, providerId);
   }
 
@@ -29,7 +39,12 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {
-    return this.userRepository.update(id, dto);
+    return this.userRepository.update(id, {
+      ...dto,
+      subscriptionExpiresAt: dto.subscriptionExpiresAt
+        ? new Date(dto.subscriptionExpiresAt)
+        : undefined,
+    });
   }
 
   async delete(id: string): Promise<void> {
@@ -44,7 +59,10 @@ export class UsersService {
     lastName?: string | null;
     avatar?: string | null;
   }): Promise<User> {
-    const existingByProvider = await this.findByProvider(payload.provider, payload.providerId);
+    const existingByProvider = await this.findByProvider(
+      payload.provider,
+      payload.providerId,
+    );
     if (existingByProvider) {
       return existingByProvider;
     }
@@ -72,6 +90,8 @@ export class UsersService {
       provider: payload.provider,
       providerId: payload.providerId,
       password: null,
+      subscriptionPlan: SubscriptionPlan.Free,
+      subscriptionExpiresAt: null,
       isActive: true,
     });
   }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BucketItemStat, ItemBucketMetadata, Client as MinioClient } from 'minio';
+import { ItemBucketMetadata, Client as MinioClient } from 'minio';
 import { Readable } from 'node:stream';
 
 @Injectable()
@@ -13,7 +13,8 @@ export class StorageService {
   constructor(private readonly configService: ConfigService) {
     this.bucket = this.configService.get<string>('storage.bucket', 'tracks');
     this.client = new MinioClient({
-      endPoint: this.configService.get<string>('storage.endPoint') ?? '127.0.0.1',
+      endPoint:
+        this.configService.get<string>('storage.endPoint') ?? '127.0.0.1',
       port: this.configService.get<number>('storage.port') ?? 9000,
       useSSL: this.configService.get<boolean>('storage.useSSL') ?? false,
       accessKey: this.configService.get<string>('storage.accessKey'),
@@ -33,16 +34,24 @@ export class StorageService {
     this.bucketEnsured = true;
   }
 
-// Upload the loaded audio file to RAM.
-  async uploadBuffer(objectKey: string, buffer: Buffer, contentType?: string): Promise<void> {
+  // Upload the loaded audio file to RAM.
+  async uploadBuffer(
+    objectKey: string,
+    buffer: Buffer,
+    contentType?: string,
+  ): Promise<void> {
     await this.ensureBucket();
     // upload buffer to MinIO
     await this.client.putObject(this.bucket, objectKey, buffer, buffer.length, {
       'Content-Type': contentType,
     });
   }
-// Upload files WITHOUT loading them all into RAM.
-  async uploadStream(objectKey: string, stream: Readable, contentType?: string): Promise<void> {
+  // Upload files WITHOUT loading them all into RAM.
+  async uploadStream(
+    objectKey: string,
+    stream: Readable,
+    contentType?: string,
+  ): Promise<void> {
     await this.ensureBucket();
     // size = undefined -> MinIO auto detect stream size
     // output of ffmpeg is a stream
@@ -51,20 +60,24 @@ export class StorageService {
     });
   }
 
-// get metadata of object
+  // get metadata of object
   async statObject(objectKey: string): Promise<ItemBucketMetadata> {
     await this.ensureBucket();
     return this.client.statObject(this.bucket, objectKey);
   }
 
-// Download full file -> Get ReadableStream to read all the file
+  // Download full file -> Get ReadableStream to read all the file
   async getObjectStream(objectKey: string): Promise<Readable> {
     await this.ensureBucket();
     return this.client.getObject(this.bucket, objectKey);
   }
 
   // Download partial file -> Just get a range of bytes frorm "start" to "end"
-  async getObjectRange(objectKey: string, start: number, end: number): Promise<Readable> {
+  async getObjectRange(
+    objectKey: string,
+    start: number,
+    end: number,
+  ): Promise<Readable> {
     await this.ensureBucket();
     const length = end - start + 1;
     return this.client.getPartialObject(this.bucket, objectKey, start, length);

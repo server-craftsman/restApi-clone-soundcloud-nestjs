@@ -1,7 +1,9 @@
 import * as Joi from 'joi';
 
 export const envValidationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid('development', 'production', 'test')
+    .default('development'),
   PORT: Joi.number().default(3000),
   POSTGRES_HOST: Joi.string().default('127.0.0.1'),
   POSTGRES_PORT: Joi.number().default(5432),
@@ -25,5 +27,12 @@ export const envValidationSchema = Joi.object({
   FACEBOOK_APP_SECRET: Joi.string().required(),
   FACEBOOK_CALLBACK_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
-  CORS_ORIGIN: Joi.string().default('http://localhost:3000,http://localhost:8888'),
+  CORS_ORIGIN: Joi.string().default(
+    'http://localhost:3000,http://localhost:8888',
+  ),
+  UPLOAD_FREE_MINUTES: Joi.number().positive().default(180),
+  UPLOAD_PRO_MINUTES: Joi.number().min(0).default(0),
+  UPLOAD_MAX_FILE_SIZE_BYTES: Joi.number()
+    .positive()
+    .default(4 * 1024 * 1024 * 1024),
 });

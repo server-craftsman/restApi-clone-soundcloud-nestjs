@@ -9,7 +9,12 @@ import { AuthFacebookController } from './auth-facebook.controller';
 import { AuthFacebookService } from './auth-facebook.service';
 
 @Module({
-  imports: [ConfigModule, PassportModule.register({ session: false }), AuthModule, UsersModule],
+  imports: [
+    ConfigModule,
+    PassportModule.register({ session: false }),
+    AuthModule,
+    UsersModule,
+  ],
   controllers: [AuthFacebookController],
   providers: [FacebookStrategy, FacebookAuthGuard, AuthFacebookService],
   exports: [FacebookAuthGuard],

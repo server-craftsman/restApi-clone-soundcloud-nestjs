@@ -8,6 +8,7 @@ import {
   Query,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -15,7 +16,22 @@ import { memoryStorage } from 'multer';
 import { Response } from 'express';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { ApiBody, ApiConsumes, ApiProduces, ApiResponse, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiProduces,
+  ApiResponse,
+  ApiTags,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard, CurrentUser } from '../auth';
+import { User } from '../users/domain/user';
+
+const UPLOAD_MAX_FILE_SIZE_BYTES = Number(
+  process.env.UPLOAD_MAX_FILE_SIZE_BYTES ?? 4 * 1024 * 1024 * 1024,
+);
 
 @ApiTags('Tracks')
 @Controller('tracks')
@@ -33,14 +49,21 @@ export class TracksController {
       parseInt(limit),
       parseInt(offset),
     );
-    return { data: tracks, total, limit: parseInt(limit), offset: parseInt(offset) };
+    return {
+      data: tracks,
+      total,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    };
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: { fileSize: 100 * 1024 * 1024 },
+      limits: { fileSize: UPLOAD_MAX_FILE_SIZE_BYTES },
     }),
   )
   @ApiConsumes('multipart/form-data')
@@ -52,6 +75,7 @@ export class TracksController {
         file: { type: 'string', format: 'binary' },
         title: { type: 'string' },
         description: { type: 'string' },
+        estimatedDurationSeconds: { type: 'number' },
       },
       required: ['file', 'title'],
     },
@@ -59,8 +83,9 @@ export class TracksController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateTrackDto,
+    @CurrentUser() user: User,
   ) {
-    return this.tracksService.createFromUpload(file, dto);
+    return this.tracksService.createFromUpload(file, dto, user.id);
   }
 
   @Get(':id/stream')

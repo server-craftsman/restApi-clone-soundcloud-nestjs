@@ -23,10 +23,18 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     });
   }
 
-  async validate(_accessToken: string, _refreshToken: string, profile: Profile) {
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: Profile,
+  ) {
     const email = profile.emails?.[0]?.value ?? null;
-    const firstName = (profile as any).name?.givenName ?? profile.displayName ?? 'Facebook';
-    const lastName = (profile as any).name?.familyName ?? '';
+    const profileName = profile.name as
+      | { givenName?: string; familyName?: string }
+      | undefined;
+    const firstName =
+      profileName?.givenName ?? profile.displayName ?? 'Facebook';
+    const lastName = profileName?.familyName ?? '';
     const avatar = profile.photos?.[0]?.value ?? null;
 
     const user = await this.usersService.upsertSocialUser({

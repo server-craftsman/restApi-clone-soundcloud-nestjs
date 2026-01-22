@@ -15,6 +15,8 @@ export class UserMapper {
       password: entity.password,
       avatar: entity.avatar,
       bio: entity.bio,
+      subscriptionPlan: entity.subscriptionPlan,
+      subscriptionExpiresAt: entity.subscriptionExpiresAt,
       isActive: entity.isActive,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -28,6 +30,6 @@ export class UserMapper {
   }
 
   toDomainArray(entities: UserEntity[]): User[] {
-    return entities.map(entity => this.toDomain(entity));
+    return entities.map((entity) => this.toDomain(entity));
   }
 }

@@ -27,7 +27,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-      const accessToken = this.createAccessToken(user);
+    const accessToken = this.createAccessToken(user);
     return { user, accessToken };
   }
 
@@ -46,7 +46,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-      const accessToken = this.createAccessToken(user);
+    const accessToken = this.createAccessToken(user);
     return { user, accessToken };
   }
 
@@ -57,7 +57,14 @@ export class AuthService {
     );
   }
 
-  verifyToken(token: string) {
-    return this.jwtService.verify(token);
+  verifyToken(token: string): JwtPayload {
+    return this.jwtService.verify<JwtPayload>(token);
   }
+}
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  iat?: number;
+  exp?: number;
 }

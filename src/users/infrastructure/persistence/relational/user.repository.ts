@@ -9,7 +9,10 @@ import { UserRepositoryAbstract } from './repositories/user.repository.abstract'
 export class UserRepository extends UserRepositoryAbstract {
   private readonly repository: Repository<UserEntity>;
 
-  constructor(private dataSource: DataSource, private mapper: UserMapper) {
+  constructor(
+    private dataSource: DataSource,
+    private mapper: UserMapper,
+  ) {
     super();
     this.repository = dataSource.getRepository(UserEntity);
   }
@@ -30,8 +33,13 @@ export class UserRepository extends UserRepositoryAbstract {
     return entity ? this.mapper.toDomain(entity) : null;
   }
 
-  async findByProvider(provider: string, providerId: string): Promise<User | null> {
-    const entity = await this.repository.findOne({ where: { provider, providerId } });
+  async findByProvider(
+    provider: string,
+    providerId: string,
+  ): Promise<User | null> {
+    const entity = await this.repository.findOne({
+      where: { provider, providerId },
+    });
     return entity ? this.mapper.toDomain(entity) : null;
   }
 

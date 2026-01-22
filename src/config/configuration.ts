@@ -1,7 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ffmpegStatic = require('ffmpeg-static');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
+import ffmpegStatic from 'ffmpeg-static';
+import ffprobeInstaller from '@ffprobe-installer/ffprobe';
+
+interface FfprobeInstaller {
+  path?: string;
+}
 
 export default () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -30,8 +32,12 @@ export default () => ({
     bucket: process.env.MINIO_BUCKET ?? 'tracks',
   },
   media: {
-    ffmpegPath: process.env.FFMPEG_PATH ?? ffmpegStatic ?? undefined,
-    ffprobePath: process.env.FFPROBE_PATH ?? ffprobeInstaller?.path ?? undefined,
+    ffmpegPath:
+      process.env.FFMPEG_PATH ??
+      (typeof ffmpegStatic === 'string' ? ffmpegStatic : undefined),
+    ffprobePath:
+      process.env.FFPROBE_PATH ??
+      (ffprobeInstaller as FfprobeInstaller | undefined)?.path,
   },
   oauth: {
     google: {
@@ -46,6 +52,8 @@ export default () => ({
     },
   },
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['http://localhost:3000'],
+    origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) ?? [
+      'http://localhost:3000',
+    ],
   },
 });

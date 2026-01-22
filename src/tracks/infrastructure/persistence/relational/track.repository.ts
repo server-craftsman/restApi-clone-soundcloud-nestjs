@@ -4,12 +4,16 @@ import { Track } from '../../../domain/track';
 import { TrackEntity } from './entities/track.entity';
 import { TrackMapper } from './mappers/track.mapper';
 import { TrackRepositoryAbstract } from './repositories/track.repository.abstract';
+import { TrackStatus } from '../../../../enums';
 
 @Injectable()
 export class TrackRepository extends TrackRepositoryAbstract {
   private readonly repository: Repository<TrackEntity>;
 
-  constructor(private dataSource: DataSource, private mapper: TrackMapper) {
+  constructor(
+    private dataSource: DataSource,
+    private mapper: TrackMapper,
+  ) {
     super();
     this.repository = dataSource.getRepository(TrackEntity);
   }
@@ -19,7 +23,10 @@ export class TrackRepository extends TrackRepositoryAbstract {
     return entity ? this.mapper.toDomain(entity) : null;
   }
 
-  async findAll(limit: number = 10, offset: number = 0): Promise<[Track[], number]> {
+  async findAll(
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<[Track[], number]> {
     const [entities, count] = await this.repository.findAndCount({
       take: limit,
       skip: offset,
@@ -50,11 +57,23 @@ export class TrackRepository extends TrackRepositoryAbstract {
   }
 
   async updateStatus(id: string, status: string): Promise<void> {
-    await this.repository.update(id, { status: status as any });
+    await this.repository.update(id, { status: status as TrackStatus });
   }
 
-  async updateTranscodedKey(id: string, transcodedObjectKey: string): Promise<void> {
+  async updateTranscodedKey(
+    id: string,
+    transcodedObjectKey: string,
+  ): Promise<void> {
     await this.repository.update(id, { transcodedObjectKey });
+  }
+
+  async getTotalDurationSecondsByUser(userId: string): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder('track')
+      .select('SUM(COALESCE(track.durationSeconds, 0))', 'total')
+      .where('track.userId = :userId', { userId })
+      .getRawOne<{ total: string | null }>();
+    return result?.total ? Number(result.total) : 0;
   }
 
   async delete(id: string): Promise<void> {

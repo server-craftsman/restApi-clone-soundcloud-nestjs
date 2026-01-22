@@ -6,12 +6,14 @@ import { TracksService } from './tracks.service';
 import { StorageModule } from '../storage/storage.module';
 import { MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
 import { RelationalTrackPersistenceModule } from './infrastructure/persistence/relational';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     ConfigModule,
     RelationalTrackPersistenceModule,
     StorageModule,
+    UsersModule,
     BullModule.registerQueue({ name: MEDIA_TRANSCODE_QUEUE }),
   ],
   controllers: [TracksController],

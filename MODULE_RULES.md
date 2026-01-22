@@ -806,6 +806,163 @@ export class TrackEntity {
 }
 ```
 
+## 21. Authentication & Authorization Rules
+
+### 21.1 JWT Authentication Setup
+
+**Location**: `src/auth/` module handles all authentication concerns.
+
+**Components**:
+
+- `JwtStrategy`: Passport strategy that validates JWT tokens and loads user
+- `JwtAuthGuard`: Guard that protects endpoints requiring authentication
+- `@CurrentUser` decorator: Extracts authenticated user from request
+
+### 21.2 Protecting Endpoints
+
+All endpoints requiring authentication MUST use `@UseGuards(JwtAuthGuard)`:
+
+```typescript
+import { Controller, Post, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard, CurrentUser } from '../auth';
+import { User } from '../users/domain/user';
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+@Controller('tracks')
+@ApiTags('Tracks')
+export class TracksController {
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() // Adds "Authorize" button in Swagger UI
+  async upload(
+    @Body() dto: CreateTrackDto,
+    @CurrentUser() user: User, // Automatically extracts user from JWT token
+  ) {
+    return this.tracksService.create(dto, user.id);
+  }
+}
+```
+
+### 21.3 User ID Extraction Rule (IMPORTANT)
+
+**NEVER accept `userId` from request body or query parameters for actions on behalf of authenticated users.**
+
+❌ **WRONG - Security Vulnerability**:
+
+```typescript
+export class CreateTrackDto {
+  @ApiProperty()
+  userId!: string; // ❌ User can fake this!
+}
+
+@Post()
+async upload(@Body() dto: CreateTrackDto) {
+  return this.service.create(dto.userId); // ❌ Insecure!
+}
+```
+
+✅ **CORRECT - Extract from JWT Token**:
+
+```typescript
+export class CreateTrackDto {
+  @ApiProperty()
+  title!: string;
+  // ✅ No userId field - extracted from token
+}
+
+@Post()
+@UseGuards(JwtAuthGuard)
+async upload(
+  @Body() dto: CreateTrackDto,
+  @CurrentUser() user: User, // ✅ Secure: from verified token
+) {
+  return this.service.create(dto, user.id);
+}
+```
+
+### 21.4 Service Layer Pattern
+
+Services receiving user-specific actions MUST accept `userId` as a separate parameter:
+
+```typescript
+@Injectable()
+export class TracksService {
+  async createFromUpload(
+    file: Express.Multer.File,
+    dto: CreateTrackDto,
+    userId: string, // ✅ Received from controller, extracted from token
+  ): Promise<Track> {
+    // Use userId for ownership and quota checks
+    const user = await this.usersService.findById(userId);
+    // ... business logic
+  }
+}
+```
+
+### 21.5 @CurrentUser Decorator
+
+**Location**: `src/auth/decorators/current-user.decorator.ts`
+
+**Usage**: Extracts the authenticated user object from the request (populated by JwtStrategy)
+
+```typescript
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { User } from '../../users/domain/user';
+
+export const CurrentUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext): User => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user; // Populated by JwtStrategy.validate()
+  },
+);
+```
+
+### 21.6 Public vs Protected Endpoints
+
+**Public Endpoints** (no authentication required):
+
+- Auth endpoints: `/auth/sign-in`, `/auth/sign-up`
+- Public content: `/tracks/:id/stream` (read-only)
+- Health checks, status pages
+
+**Protected Endpoints** (JWT required):
+
+- Create/Update/Delete operations: `POST /tracks`, `PUT /tracks/:id`
+- User profile: `GET /users/me`, `PUT /users/me`
+- User-specific listings: `GET /tracks/my-uploads`
+
+### 21.7 Swagger/OpenAPI Documentation
+
+Protected endpoints MUST include `@ApiBearerAuth()` decorator:
+
+```typescript
+@Post()
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth() // Adds "Authorize" button in Swagger
+async upload(@CurrentUser() user: User) {
+  // ...
+}
+```
+
+This enables the "Authorize" button in Swagger UI where users can input their JWT token.
+
+### 21.8 Error Handling
+
+Authentication failures return standard HTTP status codes:
+
+- `401 Unauthorized`: Missing or invalid JWT token
+- `403 Forbidden`: Valid token but insufficient permissions
+- `400 Bad Request`: Quota exceeded, validation errors
+
+### 21.9 Checklist for Authenticated Endpoints
+
+- [ ] `@UseGuards(JwtAuthGuard)` applied to controller method
+- [ ] `@ApiBearerAuth()` added for Swagger documentation
+- [ ] `@CurrentUser()` decorator used to extract user
+- [ ] NO `userId` in request DTO
+- [ ] Service method accepts `userId` as separate parameter
+- [ ] Ownership/quota checks implemented in service layer
+
 ## 21. Migration Path for Existing Code
 
 When refactoring existing modules to follow these rules:
