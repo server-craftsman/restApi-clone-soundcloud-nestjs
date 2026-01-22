@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { User } from '../users/domain/user';
+import { JwtPayload } from './interfaces';
 
 @Injectable()
 export class AuthService {
@@ -60,11 +61,4 @@ export class AuthService {
   verifyToken(token: string): JwtPayload {
     return this.jwtService.verify<JwtPayload>(token);
   }
-}
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  iat?: number;
-  exp?: number;
 }

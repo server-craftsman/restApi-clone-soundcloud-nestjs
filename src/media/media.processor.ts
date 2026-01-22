@@ -10,12 +10,7 @@ import { TrackStatus } from '../enums';
 import { TrackEntity } from '../tracks/infrastructure/persistence/relational/entities/track.entity';
 import { StorageService } from '../storage/storage.service';
 import { MEDIA_TRANSCODE_QUEUE } from '../queue/queue.constants';
-
-interface TranscodeJob {
-  trackId: string;
-  sourceKey: string;
-  targetKey: string;
-}
+import { TranscodeJob } from './interfaces';
 
 @Injectable()
 @Processor(MEDIA_TRANSCODE_QUEUE)

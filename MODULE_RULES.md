@@ -573,6 +573,27 @@ import { TrackStatus } from './domain/track'; // WRONG
 import { TrackStatus } from '../../enums'; // CORRECT
 ```
 
+### 13.3 Interface Extraction Rules
+
+- **One interface per file** inside `<module>/interfaces/` (or `/config/interfaces` for config-only types).
+- **Barrel export** all interfaces from `interfaces/index.ts`; consumers import from the barrel, never deep paths.
+- **No inline interface declarations** inside services, strategies, processors, or config files—move them to `interfaces/`.
+- **Naming**: `{descriptive-name}.interface.ts` (e.g., `oauth-profile.interface.ts`, `stream-payload.interface.ts`, `transcode-job.interface.ts`).
+- **Example structure**:
+
+```
+src/auth/interfaces/oauth-profile.interface.ts
+src/auth/interfaces/jwt-payload.interface.ts
+src/auth/interfaces/index.ts
+```
+
+- **Usage**:
+
+```typescript
+// ✅ Service/strategy importing shared interface
+import { OAuthProfile } from './interfaces';
+```
+
 ## 14. File Size Guidelines
 
 | File Type                 | Max Lines | Purpose                  |

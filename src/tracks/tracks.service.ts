@@ -19,13 +19,7 @@ import { TrackRepository } from './infrastructure/persistence/relational/track.r
 import { SubscriptionPlan, TrackStatus } from '../enums';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/domain/user';
-export interface StreamPayload {
-  stream: NodeJS.ReadableStream;
-  start: number;
-  end: number;
-  size: number;
-  contentType: string;
-}
+import { StreamPayload } from './interfaces';
 
 @Injectable()
 export class TracksService {

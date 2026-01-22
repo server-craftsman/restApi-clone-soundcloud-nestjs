@@ -1,16 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
-
-interface OAuthProfile {
-  id: string;
-  emails?: Array<{ value: string }>;
-  name?: {
-    givenName?: string;
-    familyName?: string;
-  };
-  photos?: Array<{ value: string }>;
-}
+import { OAuthProfile } from '../auth/interfaces';
 
 @Injectable()
 export class AuthFacebookService {

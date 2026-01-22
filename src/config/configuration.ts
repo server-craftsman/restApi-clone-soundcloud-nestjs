@@ -1,9 +1,6 @@
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeInstaller from '@ffprobe-installer/ffprobe';
-
-interface FfprobeInstaller {
-  path?: string;
-}
+import { FfprobeInstaller } from './interfaces';
 
 export default () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',

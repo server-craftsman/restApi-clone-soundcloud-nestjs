@@ -4,3 +4,4 @@ export { AuthController } from './auth.controller';
 export { JwtAuthGuard } from './guards/jwt-auth.guard';
 export * from './dto/index';
 export * from './decorators';
+export * from './interfaces';
