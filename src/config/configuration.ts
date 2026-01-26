@@ -2,32 +2,56 @@ import ffmpegStatic from 'ffmpeg-static';
 import ffprobeInstaller from '@ffprobe-installer/ffprobe';
 import { FfprobeInstaller } from './interfaces';
 
+const nodeEnv = process.env.NODE_ENV ?? 'development';
+const isProduction = nodeEnv === 'production';
+
+const getEnv = (key: string, fallback?: string) =>
+  process.env[key] !== undefined ? process.env[key] : fallback;
+
+const getNumber = (key: string, fallback: number) => {
+  const value = process.env[key];
+  if (value === undefined) return fallback;
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 export default () => ({
-  nodeEnv: process.env.NODE_ENV ?? 'development',
+  nodeEnv,
   port: parseInt(process.env.PORT ?? '3000', 10),
   app: {
     title: 'SoundCloud Clone API',
     version: '1.0.0',
   },
   database: {
-    host: process.env.POSTGRES_HOST ?? '127.0.0.1',
-    port: parseInt(process.env.POSTGRES_PORT ?? '5432', 10),
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    name: process.env.POSTGRES_DB,
+    host: getEnv('POSTGRES_HOST', '127.0.0.1'),
+    port: getNumber('POSTGRES_PORT', 5432),
+    user: getEnv('POSTGRES_USER', 'soundcloud_user'),
+    password: getEnv('POSTGRES_PASSWORD', 'soundcloud_password'),
+    name: getEnv('POSTGRES_DB', 'soundcloud_db'),
+    ssl: getEnv('POSTGRES_SSL') === 'true' ? { rejectUnauthorized: false } : false,
   },
   redis: {
-    host: process.env.REDIS_HOST ?? '127.0.0.1',
-    port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+    host: getEnv('REDIS_HOST', '127.0.0.1'),
+    port: getNumber('REDIS_PORT', 6379),
+    password: getEnv('REDIS_PASSWORD', ''),
   },
-  storage: {
-    endPoint: process.env.MINIO_ENDPOINT ?? '127.0.0.1',
-    port: parseInt(process.env.MINIO_PORT ?? '9000', 10),
-    accessKey: process.env.MINIO_ACCESS_KEY,
-    secretKey: process.env.MINIO_SECRET_KEY,
-    useSSL: (process.env.MINIO_USE_SSL ?? 'false') === 'true',
-    bucket: process.env.MINIO_BUCKET ?? 'tracks',
-  },
+  storage: isProduction
+    ? {
+        type: 's3',
+        region: getEnv('AWS_REGION'),
+        accessKeyId: getEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: getEnv('AWS_SECRET_ACCESS_KEY'),
+        bucket: getEnv('AWS_S3_BUCKET'),
+      }
+    : {
+        type: 'minio',
+        endPoint: getEnv('MINIO_ENDPOINT', 'localhost'),
+        port: getNumber('MINIO_PORT', 9000),
+        accessKey: getEnv('MINIO_ACCESS_KEY', 'minioadmin'),
+        secretKey: getEnv('MINIO_SECRET_KEY', 'minioadmin'),
+        useSSL: (getEnv('MINIO_USE_SSL', 'false') ?? 'false') === 'true',
+        bucket: getEnv('MINIO_BUCKET', 'tracks'),
+      },
   media: {
     ffmpegPath:
       process.env.FFMPEG_PATH ??
@@ -38,14 +62,20 @@ export default () => ({
   },
   oauth: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+      clientId: getEnv('GOOGLE_CLIENT_ID', 'dev-google-client-id'),
+      clientSecret: getEnv('GOOGLE_CLIENT_SECRET', 'dev-google-client-secret'),
+      callbackURL: getEnv(
+        'GOOGLE_CALLBACK_URL',
+        'http://localhost:3000/auth/google/callback',
+      ),
     },
     facebook: {
-      appId: process.env.FACEBOOK_APP_ID,
-      appSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackUrl: process.env.FACEBOOK_CALLBACK_URL,
+      appId: getEnv('FACEBOOK_APP_ID', 'dev-facebook-app-id'),
+      appSecret: getEnv('FACEBOOK_APP_SECRET', 'dev-facebook-app-secret'),
+      callbackURL: getEnv(
+        'FACEBOOK_CALLBACK_URL',
+        'http://localhost:3000/auth/facebook/callback',
+      ),
     },
   },
   cors: {

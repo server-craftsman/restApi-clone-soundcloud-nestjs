@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
@@ -13,14 +13,24 @@ export class MailerService {
   }
 
   private initializeTransporter() {
+    const host = this.configService.get<string>('SMTP_HOST');
+    const port = this.configService.get<number>('SMTP_PORT');
+    const secure = (this.configService.get<string>('SMTP_SECURE')) === 'true';
+    const user = this.configService.get<string>('SMTP_USER');
+    const pass = this.configService.get<string>('SMTP_PASS');
+
+    if (!host || !user || !pass) {
+      // Fallback to JSON transport in development when SMTP is not configured
+      this.transporter = nodemailer.createTransport({ jsonTransport: true });
+      this.logger.warn('SMTP env not set; using JSON transport for emails');
+      return;
+    }
+
     const smtpConfig: SMTPTransport.Options = {
-      host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT'),
-      secure: this.configService.get<string>('SMTP_SECURE') === 'true',
-      auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASS'),
-      },
+      host,
+      port,
+      secure,
+      auth: { user, pass },
     };
 
     this.transporter = nodemailer.createTransport(smtpConfig);

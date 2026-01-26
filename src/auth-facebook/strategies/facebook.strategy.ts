@@ -10,14 +10,14 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
   ) {
-    const clientID = configService.get<string>('FACEBOOK_APP_ID');
-    const clientSecret = configService.get<string>('FACEBOOK_APP_SECRET');
-    const callbackURL = configService.get<string>('FACEBOOK_CALLBACK_URL');
+    const clientID = configService.get<string>('oauth.facebook.clientId');
+    const clientSecret = configService.get<string>('oauth.facebook.clientSecret');
+    const callbackURL = configService.get<string>('oauth.facebook.callbackURL');
 
     super({
-      clientID: clientID ?? '',
-      clientSecret: clientSecret ?? '',
-      callbackURL: callbackURL ?? '',
+      clientID: clientID ?? 'dev-facebook-app-id',
+      clientSecret: clientSecret ?? 'dev-facebook-app-secret',
+      callbackURL: callbackURL ?? 'http://localhost:3000/auth/facebook/callback',
       profileFields: ['id', 'emails', 'name', 'photos'],
       enableProof: true,
     });
