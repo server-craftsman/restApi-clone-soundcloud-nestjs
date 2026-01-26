@@ -51,9 +51,21 @@
 
 ## Running the project
 
+### Local Development
+
 - yarn or npm install: install node_modules
 - yarn dev or npm run dev: run src
 - src run API in localhost: http://localhost:8888
+
+### Docker
+
+- docker compose up -d: start all services (postgres, redis, minio, app)
+- docker compose down: stop all services
+- docker compose down -v: stop and remove volumes
+- docker compose logs -f app: view application logs
+- docker compose ps: check running containers
+- API runs on: http://localhost:8888
+- API Docs run on: http://localhost:8888/swagger
 
 ## References
 
