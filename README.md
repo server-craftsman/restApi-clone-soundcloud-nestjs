@@ -3,9 +3,8 @@
 ## Requirements
 
 - node --version: v20.0+
-- npm --version: v9.6+
-- yarn --version: 1.22+
-- install node, npm or yarn
+- bun --version: v1.0+
+- install node and bun
 - create file .env with required fields:
   - NODE_ENV: development
   - PORT: 8888
@@ -51,21 +50,41 @@
 
 ## Running the project
 
-### Local Development
+### Docker (One file - Development & Production)
 
-- yarn or npm install: install node_modules
-- yarn dev or npm run dev: run src
-- src run API in localhost: http://localhost:8888
+**Development - Start with hot reload:**
 
-### Docker
+```bash
+docker compose up
+```
 
-- docker compose up -d: start all services (postgres, redis, minio, app)
-- docker compose down: stop all services
-- docker compose down -v: stop and remove volumes
-- docker compose logs -f app: view application logs
-- docker compose ps: check running containers
-- API runs on: http://localhost:8888
-- API Docs run on: http://localhost:8888/swagger
+**Production - Build optimized image:**
+
+```bash
+docker compose up -d --build
+```
+
+**Commands:**
+
+```bash
+docker compose logs -f app        # View logs
+docker compose restart app         # Restart app
+docker compose down                # Stop all services
+docker compose down -v             # Stop and remove volumes
+```
+
+**Access services:**
+
+- API: http://localhost:8888
+- MinIO Console: http://localhost:9001 (minioadmin/minioadmin)
+
+### Migrations
+
+- bun run migration:generate src/database/migrations/MigrationName: generate migration from entities
+- bun run migration:create src/database/migrations/MigrationName: create empty migration
+- bun run migration:run: run pending migrations
+- bun run migration:revert: revert last migration
+- bun run migration:show: show all migrations
 
 ## References
 

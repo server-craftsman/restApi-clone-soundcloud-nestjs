@@ -1,28 +1,31 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json ./
+COPY bun.lockb* ./
 
-RUN yarn install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN bun run build
 
 # Production stage
-FROM node:20-alpine
+FROM oven/bun:1-alpine
 
 WORKDIR /app
 
 # Install dumb-init to handle signals properly
 RUN apk add --no-cache dumb-init ffmpeg
 
-COPY package.json yarn.lock ./
+COPY package.json ./
+COPY bun.lockb* ./
+COPY .env ./
 
-RUN yarn install --frozen-lockfile --production && \
-    yarn cache clean
+RUN bun install --frozen-lockfile --production && \
+    bun pm cache rm
 
 COPY --from=builder /app/dist ./dist
 
@@ -31,7 +34,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node -e "require('http').get('http://localhost:8888', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-USER node
+USER bun
 
 ENTRYPOINT ["dumb-init", "--"]
 

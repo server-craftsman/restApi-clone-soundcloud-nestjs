@@ -15,6 +15,15 @@ const getNumber = (key: string, fallback: number) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+export const getDatabaseConfig = () => ({
+  host: getEnv('POSTGRES_HOST', '127.0.0.1'),
+  port: getNumber('POSTGRES_PORT', 5432),
+  username: getEnv('POSTGRES_USER', 'soundcloud_user'),
+  password: getEnv('POSTGRES_PASSWORD', 'soundcloud_password'),
+  database: getEnv('POSTGRES_DB', 'soundcloud_db'),
+  ssl: getEnv('POSTGRES_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+});
+
 export default () => ({
   nodeEnv,
   port: parseInt(process.env.PORT ?? '3000', 10),
@@ -22,14 +31,7 @@ export default () => ({
     title: 'SoundCloud Clone API',
     version: '1.0.0',
   },
-  database: {
-    host: getEnv('POSTGRES_HOST', '127.0.0.1'),
-    port: getNumber('POSTGRES_PORT', 5432),
-    user: getEnv('POSTGRES_USER', 'soundcloud_user'),
-    password: getEnv('POSTGRES_PASSWORD', 'soundcloud_password'),
-    name: getEnv('POSTGRES_DB', 'soundcloud_db'),
-    ssl: getEnv('POSTGRES_SSL') === 'true' ? { rejectUnauthorized: false } : false,
-  },
+  database: getDatabaseConfig(),
   redis: {
     host: getEnv('REDIS_HOST', '127.0.0.1'),
     port: getNumber('REDIS_PORT', 6379),

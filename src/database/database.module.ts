@@ -11,9 +11,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         type: 'postgres',
         host: configService.get<string>('database.host'),
         port: configService.get<number>('database.port'),
-        username: configService.get<string>('database.user'),
+        // Keep keys aligned with getDatabaseConfig() to avoid missing credentials
+        username: configService.get<string>('database.username'),
         password: configService.get<string>('database.password'),
-        database: configService.get<string>('database.name'),
+        database: configService.get<string>('database.database'),
         autoLoadEntities: true,
         synchronize: true,
         logging: configService.get<string>('nodeEnv') !== 'production',
