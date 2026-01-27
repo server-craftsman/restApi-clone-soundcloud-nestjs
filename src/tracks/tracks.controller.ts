@@ -5,6 +5,8 @@ import {
   Headers,
   Param,
   Post,
+  Put,
+  Patch,
   Query,
   Res,
   UploadedFile,
@@ -14,8 +16,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Response } from 'express';
-import { TracksService } from './tracks.service';
+import { TracksService } from './service/tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
+import { UpdateTrackDto } from './dto/update-track.dto';
 import {
   ApiBody,
   ApiConsumes,
@@ -68,14 +71,53 @@ export class TracksController {
   )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Upload audio track',
+    description: 'Upload audio track with metadata',
     schema: {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary' },
-        title: { type: 'string' },
-        description: { type: 'string' },
-        estimatedDurationSeconds: { type: 'number' },
+        title: { type: 'string', maxLength: 255 },
+        description: { type: 'string', maxLength: 1000 },
+        estimatedDurationSeconds: { type: 'number', description: 'Estimated duration in seconds' },
+        
+        // Core metadata
+        artworkUrl: { type: 'string', format: 'uri', description: 'URL to track artwork image' },
+        trackLink: { type: 'string', format: 'uri', description: 'External track link' },
+        mainArtists: { type: 'string', maxLength: 500, description: 'Main artists (comma-separated)' },
+        genre: { type: 'string', maxLength: 128, description: 'Music genre' },
+        tags: { type: 'string', maxLength: 1000, description: 'Tags (comma-separated)' },
+        privacy: { type: 'string', enum: ['public', 'private', 'scheduled'], default: 'public' },
+        scheduledAt: { type: 'string', format: 'date-time', description: 'Scheduled publish date (ISO 8601)' },
+        
+        // Advanced details
+        buyLink: { type: 'string', format: 'uri', description: 'Link where fans can purchase the track' },
+        recordLabel: { type: 'string', maxLength: 255, description: 'Record label name' },
+        releaseDate: { type: 'string', format: 'date', description: 'Release date' },
+        publisher: { type: 'string', maxLength: 255, description: 'Publisher name' },
+        isrc: { type: 'string', maxLength: 50, description: 'International Standard Recording Code' },
+        containsExplicitContent: { type: 'boolean', default: false, description: 'Track contains explicit content' },
+        pLine: { type: 'string', maxLength: 512, description: 'P line copyright notice' },
+        
+        // Permissions
+        enableDirectDownloads: { type: 'boolean', default: false, description: 'Allow direct downloads' },
+        enableOfflineListening: { type: 'boolean', default: true, description: 'Enable offline listening' },
+        includeInRssFeed: { type: 'boolean', default: true, description: 'Include in RSS feed' },
+        displayEmbedCode: { type: 'boolean', default: true, description: 'Display embed code' },
+        enableAppPlayback: { type: 'boolean', default: true, description: 'Enable app playback' },
+        
+        // Engagement privacy (Pro features)
+        allowComments: { type: 'boolean', default: true, description: 'Allow people to comment' },
+        showCommentsToPublic: { type: 'boolean', default: true, description: 'Show comments to public' },
+        showInsightsToPublic: { type: 'boolean', default: false, description: 'Show insights to public (Pro plan required)' },
+        geoblockingType: { type: 'string', enum: ['worldwide', 'exclusive-regions', 'blocked-regions'], default: 'worldwide' },
+        allowedRegions: { type: 'array', items: { type: 'string' }, description: 'Allowed regions (Pro plan)' },
+        blockedRegions: { type: 'array', items: { type: 'string' }, description: 'Blocked regions (Pro plan)' },
+        
+        // Audio preview
+        previewStartTime: { type: 'number', description: 'Preview start time in seconds for 20-second clip' },
+        
+        // Licensing
+        licenseType: { type: 'string', enum: ['all-rights-reserved', 'creative-commons'], default: 'all-rights-reserved' },
       },
       required: ['file', 'title'],
     },
@@ -86,6 +128,29 @@ export class TracksController {
     @CurrentUser() user: User,
   ) {
     return this.tracksService.createFromUpload(file, dto, user.id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'Track UUID', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Track updated successfully' })
+  @ApiResponse({ status: 404, description: 'Track not found' })
+  @ApiResponse({ status: 400, description: 'You can only update your own tracks' })
+  async updateTrack(
+    @Param('id') id: string,
+    @Body() dto: UpdateTrackDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.tracksService.update(id, dto, user.id);
+  }
+
+  @Get('scheduled')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'List scheduled tracks for current user' })
+  async getScheduledTracks(@CurrentUser() user: User) {
+    return this.tracksService.getScheduledTracks(user.id);
   }
 
   @Get(':id/download')

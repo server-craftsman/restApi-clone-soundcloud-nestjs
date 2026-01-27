@@ -62,4 +62,11 @@ export class UserRepository extends UserRepositoryAbstract {
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
+
+  async findByEmailVerificationToken(token: string): Promise<User | null> {
+    const entity = await this.repository.findOne({
+      where: { emailVerificationToken: token },
+    });
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
 }

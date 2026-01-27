@@ -79,4 +79,33 @@ export class TrackRepository extends TrackRepositoryAbstract {
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
+
+  async findScheduledTracksReady(currentDate: Date): Promise<Track[]> {
+    const entities = await this.repository
+      .createQueryBuilder('track')
+      .where('track.privacy = :privacy', { privacy: 'scheduled' })
+      .andWhere('track.scheduledAt <= :currentDate', { currentDate })
+      .getMany();
+      
+    return this.mapper.toDomainArray(entities);
+  }
+
+  async findScheduledTracks(userId?: string): Promise<Track[]> {
+    const where: any = {
+      privacy: 'scheduled',
+    };
+    
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const entities = await this.repository.find({
+      where,
+      order: {
+        scheduledAt: 'ASC',
+      },
+    });
+    
+    return this.mapper.toDomainArray(entities);
+  }
 }

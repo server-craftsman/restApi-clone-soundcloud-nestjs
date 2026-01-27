@@ -1,4 +1,4 @@
-import { SubscriptionPlan } from '../../enums';
+import { SubscriptionPlan, EmailVerificationStatus } from '../../enums';
 
 export interface User {
   id: string;
@@ -13,6 +13,9 @@ export interface User {
   subscriptionPlan: SubscriptionPlan;
   subscriptionExpiresAt?: Date | null;
   isActive: boolean;
+  emailVerificationStatus: EmailVerificationStatus;
+  emailVerificationToken?: string | null;
+  emailVerificationTokenExpiresAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

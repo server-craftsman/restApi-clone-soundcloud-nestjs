@@ -16,6 +16,11 @@ export class UsersService {
       subscriptionExpiresAt: dto.subscriptionExpiresAt
         ? new Date(dto.subscriptionExpiresAt)
         : null,
+      emailVerificationTokenExpiresAt: dto.emailVerificationTokenExpiresAt
+        ? typeof dto.emailVerificationTokenExpiresAt === 'string'
+          ? new Date(dto.emailVerificationTokenExpiresAt)
+          : dto.emailVerificationTokenExpiresAt
+        : null,
     });
   }
 
@@ -43,6 +48,11 @@ export class UsersService {
       ...dto,
       subscriptionExpiresAt: dto.subscriptionExpiresAt
         ? new Date(dto.subscriptionExpiresAt)
+        : undefined,
+      emailVerificationTokenExpiresAt: dto.emailVerificationTokenExpiresAt
+        ? typeof dto.emailVerificationTokenExpiresAt === 'string'
+          ? new Date(dto.emailVerificationTokenExpiresAt)
+          : dto.emailVerificationTokenExpiresAt
         : undefined,
     });
   }
@@ -105,5 +115,9 @@ export class UsersService {
       subscriptionExpiresAt: null,
       isActive: true,
     });
+  }
+
+  async findByEmailVerificationToken(token: string): Promise<User | null> {
+    return this.userRepository.findByEmailVerificationToken(token);
   }
 }

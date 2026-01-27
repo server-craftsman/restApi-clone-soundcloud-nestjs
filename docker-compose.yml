@@ -114,6 +114,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/dist
 
 volumes:
   postgres_data:

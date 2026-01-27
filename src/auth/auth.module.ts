@@ -4,12 +4,16 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { VerificationPageController } from './controllers/verification-page.controller';
+import { EmailVerificationService } from './services/email-verification.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
+import { MailerModule } from '../mailer/mailer.module';
 
 @Module({
   imports: [
     UsersModule,
+    MailerModule,
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({
@@ -17,12 +21,11 @@ import { UsersModule } from '../users/users.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') ?? 'your-secret-key',
-        signOptions: { expiresIn: '24h' },
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  controllers: [AuthController, VerificationPageController],
+  providers: [AuthService, JwtStrategy, EmailVerificationService],
+  exports: [AuthService, EmailVerificationService],
 })
 export class AuthModule {}

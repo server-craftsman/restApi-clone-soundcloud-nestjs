@@ -7,7 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { SubscriptionPlan } from '../../enums';
+import { SubscriptionPlan, EmailVerificationStatus } from '../../enums';
 
 export class UpdateUserDto {
   @ApiPropertyOptional()
@@ -60,4 +60,23 @@ export class UpdateUserDto {
   @IsOptional()
   @IsDateString()
   subscriptionExpiresAt?: string;
+
+  @ApiPropertyOptional({ enum: EmailVerificationStatus })
+  @IsOptional()
+  @IsEnum(EmailVerificationStatus)
+  emailVerificationStatus?: EmailVerificationStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  emailVerificationToken?: string | null;
+
+  @ApiPropertyOptional({ description: 'ISO datetime when verification token expires' })
+  @IsOptional()
+  emailVerificationTokenExpiresAt?: Date | string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  isActive?: boolean;
 }

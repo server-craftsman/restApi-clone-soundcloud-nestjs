@@ -13,4 +13,6 @@ export abstract class TrackRepositoryAbstract {
   ): Promise<void>;
   abstract getTotalDurationSecondsByUser(userId: string): Promise<number>;
   abstract delete(id: string): Promise<void>;
+  abstract findScheduledTracksReady(currentDate: Date): Promise<Track[]>;
+  abstract findScheduledTracks(userId?: string): Promise<Track[]>;
 }

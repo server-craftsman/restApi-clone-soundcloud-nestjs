@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../../../../domain/user';
 import { UserEntity } from '../entities/user.entity';
+import { EmailVerificationStatus } from '../../../../../enums';
 
 @Injectable()
 export class UserMapper {
@@ -20,6 +21,9 @@ export class UserMapper {
       isActive: entity.isActive,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      emailVerificationStatus: entity.emailVerificationStatus ?? EmailVerificationStatus.Pending,
+      emailVerificationToken: entity.emailVerificationToken,
+      emailVerificationTokenExpiresAt: entity.emailVerificationTokenExpiresAt,
     };
   }
 
