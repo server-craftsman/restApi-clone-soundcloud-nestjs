@@ -1,0 +1,80 @@
+import { Injectable } from '@nestjs/common';
+import { DataSource, Repository } from 'typeorm';
+import { LikeEntity } from './entities/like.entity';
+import { LikeMapper } from './mappers/like.mapper';
+import { LikeRepositoryAbstract } from './repositories/like.repository.abstract';
+import { Like } from '../../../domain/like';
+
+@Injectable()
+export class LikeRepository extends LikeRepositoryAbstract {
+  private readonly repository: Repository<LikeEntity>;
+
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly mapper: LikeMapper,
+  ) {
+    super();
+    this.repository = this.dataSource.getRepository(LikeEntity);
+  }
+
+  async findById(id: string): Promise<Like | null> {
+    const entity = await this.repository.findOne({ where: { id } });
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findByUserAndTrack(
+    userId: string,
+    trackId: string,
+  ): Promise<Like | null> {
+    const entity = await this.repository.findOne({
+      where: { userId, trackId },
+    });
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAllByUser(
+    userId: string,
+    limit: number,
+    offset: number,
+  ): Promise<[Like[], number]> {
+    const [entities, total] = await this.repository.findAndCount({
+      where: { userId },
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
+    return [this.mapper.toDomainArray(entities), total];
+  }
+
+  async findAllByTrack(
+    trackId: string,
+    limit: number,
+    offset: number,
+  ): Promise<[Like[], number]> {
+    const [entities, total] = await this.repository.findAndCount({
+      where: { trackId },
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
+    return [this.mapper.toDomainArray(entities), total];
+  }
+
+  async countByTrack(trackId: string): Promise<number> {
+    return this.repository.count({ where: { trackId } });
+  }
+
+  async create(like: Partial<Like>): Promise<Like> {
+    const entity = this.mapper.toEntity(like);
+    const saved = await this.repository.save(entity);
+    return this.mapper.toDomain(saved);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+
+  async deleteByUserAndTrack(userId: string, trackId: string): Promise<void> {
+    await this.repository.delete({ userId, trackId });
+  }
+}

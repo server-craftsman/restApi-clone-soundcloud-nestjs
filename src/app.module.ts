@@ -13,6 +13,12 @@ import { AuthGoogleModule } from './auth-google';
 import { AuthFacebookModule } from './auth-facebook';
 import { MailModule } from './mail';
 import { MailerModule } from './mailer';
+import { LikesModule } from './likes';
+import { FollowingModule } from './following';
+import { HistoryModule } from './history';
+import { PlaylistsModule } from './playlists';
+import { AlbumsModule } from './albums';
+import { StationsModule } from './stations';
 
 @Module({
   imports: [
@@ -33,6 +39,12 @@ import { MailerModule } from './mailer';
     TracksModule,
     MediaModule,
     HomeModule,
+    LikesModule,
+    FollowingModule,
+    HistoryModule,
+    PlaylistsModule,
+    AlbumsModule,
+    StationsModule,
   ],
 })
 export class AppModule {}
