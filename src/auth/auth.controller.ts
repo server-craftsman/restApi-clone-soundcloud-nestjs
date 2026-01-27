@@ -10,9 +10,9 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('sign-up')
+  @Post('email/register')
   @ApiResponse({ status: 201, type: AuthResponseDto })
-  async signUp(@Body() dto: SignUpDto): Promise<AuthResponseDto> {
+  async register(@Body() dto: SignUpDto): Promise<AuthResponseDto> {
     const { user, accessToken } = await this.authService.signUp(dto);
     return {
       accessToken,
@@ -25,9 +25,9 @@ export class AuthController {
     };
   }
 
-  @Post('sign-in')
+  @Post('email/login')
   @ApiResponse({ status: 200, type: AuthResponseDto })
-  async signIn(@Body() dto: SignInDto): Promise<AuthResponseDto> {
+  async login(@Body() dto: SignInDto): Promise<AuthResponseDto> {
     const { user, accessToken } = await this.authService.signIn(dto);
     return {
       accessToken,

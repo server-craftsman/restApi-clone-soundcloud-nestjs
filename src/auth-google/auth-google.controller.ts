@@ -5,17 +5,17 @@ import { AuthService } from '../auth/auth.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { User } from '../users/domain/user';
 
-@ApiTags('Auth Google')
-@Controller('auth/google')
+@ApiTags('Auth - OAuth')
+@Controller('auth/oauth/google')
 export class AuthGoogleController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get()
+  @Get('login')
   @UseGuards(GoogleAuthGuard)
   @ApiOperation({
     summary: 'Initiate Google OAuth login',
     description:
-      '⚠️ MUST be opened in browser tab, NOT via Swagger Execute button. Copy URL and paste in browser address bar.',
+      'MUST be opened in browser tab, NOT via Swagger Execute button. Copy URL and paste in browser address bar.',
   })
   @ApiResponse({
     status: 302,

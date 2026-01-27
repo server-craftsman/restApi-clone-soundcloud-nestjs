@@ -5,17 +5,17 @@ import { AuthService } from '../auth/auth.service';
 import { FacebookAuthGuard } from './guards/facebook-auth.guard';
 import { User } from '../users/domain/user';
 
-@ApiTags('Auth Facebook')
-@Controller('auth/facebook')
+@ApiTags('Auth - OAuth')
+@Controller('auth/oauth/facebook')
 export class AuthFacebookController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get()
+  @Get('login')
   @UseGuards(FacebookAuthGuard)
   @ApiOperation({
     summary: 'Initiate Facebook OAuth login',
     description:
-      '⚠️ MUST be opened in browser tab, NOT via Swagger Execute button. Copy URL and paste in browser address bar.',
+      'MUST be opened in browser tab, NOT via Swagger Execute button. Copy URL and paste in browser address bar.',
   })
   @ApiResponse({
     status: 302,

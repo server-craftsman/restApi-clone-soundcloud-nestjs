@@ -88,7 +88,7 @@ export class TracksController {
     return this.tracksService.createFromUpload(file, dto, user.id);
   }
 
-  @Get(':id/stream')
+  @Get(':id/download')
   @ApiParam({ name: 'id', description: 'Track UUID', type: 'string' })
   @ApiProduces('audio/mpeg', 'audio/wav', 'audio/flac', 'audio/ogg')
   @ApiResponse({
