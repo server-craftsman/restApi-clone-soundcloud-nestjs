@@ -22,7 +22,6 @@ RUN apk add --no-cache dumb-init ffmpeg
 
 COPY package.json ./
 COPY bun.lockb* ./
-COPY .env ./
 
 RUN bun install --frozen-lockfile --production && \
     bun pm cache rm
