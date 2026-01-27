@@ -21,7 +21,8 @@ export const getDatabaseConfig = () => ({
   username: getEnv('POSTGRES_USER', 'soundcloud_user'),
   password: getEnv('POSTGRES_PASSWORD', 'soundcloud_password'),
   database: getEnv('POSTGRES_DB', 'soundcloud_db'),
-  ssl: getEnv('POSTGRES_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+  ssl:
+    getEnv('POSTGRES_SSL') === 'true' ? { rejectUnauthorized: false } : false,
 });
 
 export default () => ({

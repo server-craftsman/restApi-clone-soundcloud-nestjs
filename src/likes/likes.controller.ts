@@ -81,10 +81,7 @@ export class LikesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Check if track is liked' })
   @ApiResponse({ status: 200 })
-  async isLiked(
-    @Param('trackId') trackId: string,
-    @CurrentUser() user: User,
-  ) {
+  async isLiked(@Param('trackId') trackId: string, @CurrentUser() user: User) {
     const isLiked = await this.likesService.isLiked(user.id, trackId);
     return { isLiked };
   }

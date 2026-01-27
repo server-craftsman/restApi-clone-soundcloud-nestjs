@@ -20,7 +20,8 @@ export class StationMapper {
     if (station.userId) entity.userId = station.userId;
     if (station.title) entity.title = station.title;
     if (station.description) entity.description = station.description;
-    if (station.likedCount !== undefined) entity.likedCount = station.likedCount;
+    if (station.likedCount !== undefined)
+      entity.likedCount = station.likedCount;
     return entity;
   }
 

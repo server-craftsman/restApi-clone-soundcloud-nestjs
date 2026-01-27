@@ -34,17 +34,26 @@ export const envValidationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().when('NODE_ENV', {
     is: 'production',
     then: Joi.required(),
-    otherwise: Joi.string().allow('').optional().default('dev-google-client-id'),
+    otherwise: Joi.string()
+      .allow('')
+      .optional()
+      .default('dev-google-client-id'),
   }),
   GOOGLE_CLIENT_SECRET: Joi.string().when('NODE_ENV', {
     is: 'production',
     then: Joi.required(),
-    otherwise: Joi.string().allow('').optional().default('dev-google-client-secret'),
+    otherwise: Joi.string()
+      .allow('')
+      .optional()
+      .default('dev-google-client-secret'),
   }),
   GOOGLE_CALLBACK_URL: Joi.string().when('NODE_ENV', {
     is: 'production',
     then: Joi.required(),
-    otherwise: Joi.string().allow('').optional().default('http://localhost:8888/auth/google/callback'),
+    otherwise: Joi.string()
+      .allow('')
+      .optional()
+      .default('http://localhost:8888/auth/google/callback'),
   }),
   FACEBOOK_APP_ID: Joi.string().when('NODE_ENV', {
     is: 'production',
@@ -54,12 +63,18 @@ export const envValidationSchema = Joi.object({
   FACEBOOK_APP_SECRET: Joi.string().when('NODE_ENV', {
     is: 'production',
     then: Joi.required(),
-    otherwise: Joi.string().allow('').optional().default('dev-facebook-app-secret'),
+    otherwise: Joi.string()
+      .allow('')
+      .optional()
+      .default('dev-facebook-app-secret'),
   }),
   FACEBOOK_CALLBACK_URL: Joi.string().when('NODE_ENV', {
     is: 'production',
     then: Joi.required(),
-    otherwise: Joi.string().allow('').optional().default('http://localhost:8888/auth/facebook/callback'),
+    otherwise: Joi.string()
+      .allow('')
+      .optional()
+      .default('http://localhost:8888/auth/facebook/callback'),
   }),
   // JWT: required in production, default in development
   JWT_SECRET: Joi.string().when('NODE_ENV', {
@@ -67,8 +82,12 @@ export const envValidationSchema = Joi.object({
     then: Joi.required(),
     otherwise: Joi.string().allow('').optional().default('dev_jwt_secret'),
   }),
-  CORS_ORIGIN: Joi.string().default('http://localhost:8888,http://localhost:8888'),
+  CORS_ORIGIN: Joi.string().default(
+    'http://localhost:8888,http://localhost:8888',
+  ),
   UPLOAD_FREE_MINUTES: Joi.number().positive().default(180),
   UPLOAD_PRO_MINUTES: Joi.number().min(0).default(0),
-  UPLOAD_MAX_FILE_SIZE_BYTES: Joi.number().positive().default(4 * 1024 * 1024 * 1024),
+  UPLOAD_MAX_FILE_SIZE_BYTES: Joi.number()
+    .positive()
+    .default(4 * 1024 * 1024 * 1024),
 });

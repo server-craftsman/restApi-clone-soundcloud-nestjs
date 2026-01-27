@@ -15,7 +15,7 @@ export class MailerService {
   private initializeTransporter() {
     const host = this.configService.get<string>('SMTP_HOST');
     const port = this.configService.get<number>('SMTP_PORT');
-    const secure = (this.configService.get<string>('SMTP_SECURE')) === 'true';
+    const secure = this.configService.get<string>('SMTP_SECURE') === 'true';
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
 

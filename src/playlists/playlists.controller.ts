@@ -18,7 +18,12 @@ import {
 import { PlaylistsService } from './playlists.service';
 import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../users/domain/user';
-import { PlaylistDto, CreatePlaylistDto, UpdatePlaylistDto, AddTrackDto } from './dto';
+import {
+  PlaylistDto,
+  CreatePlaylistDto,
+  UpdatePlaylistDto,
+  AddTrackDto,
+} from './dto';
 
 @ApiTags('Playlists')
 @Controller('playlists')

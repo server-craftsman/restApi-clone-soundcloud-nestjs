@@ -18,9 +18,8 @@ export class StationRepository extends StationRepositoryAbstract {
   ) {
     super();
     this.stationRepository = this.dataSource.getRepository(StationEntity);
-    this.stationTrackRepository = this.dataSource.getRepository(
-      StationTrackEntity,
-    );
+    this.stationTrackRepository =
+      this.dataSource.getRepository(StationTrackEntity);
   }
 
   async findById(id: string): Promise<Station | null> {

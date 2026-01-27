@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { LikeRepository } from './infrastructure/persistence/relational/like.repository';
 import { Like } from './domain/like';
 

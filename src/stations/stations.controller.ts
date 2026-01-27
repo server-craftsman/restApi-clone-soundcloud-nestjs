@@ -123,7 +123,11 @@ export class StationsController {
     @Body() dto: AddTrackDto,
     @CurrentUser() user: User,
   ): Promise<void> {
-    await this.stationsService.addTrackToStation(stationId, dto.trackId, user.id);
+    await this.stationsService.addTrackToStation(
+      stationId,
+      dto.trackId,
+      user.id,
+    );
   }
 
   @Delete(':id/tracks/:trackId')

@@ -1,6 +1,5 @@
 import {
   Injectable,
-  BadRequestException,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -65,7 +64,9 @@ export class PlaylistsService {
   ): Promise<void> {
     const playlist = await this.getPlaylist(playlistId);
     if (playlist.userId !== userId) {
-      throw new ForbiddenException('Cannot add tracks to other users playlists');
+      throw new ForbiddenException(
+        'Cannot add tracks to other users playlists',
+      );
     }
     const tracks = await this.playlistRepository.getPlaylistTracks(
       playlistId,

@@ -64,6 +64,16 @@ export class UsersService {
       payload.providerId,
     );
     if (existingByProvider) {
+      if (!existingByProvider.isActive) {
+        await this.userRepository.update(existingByProvider.id, {
+          isActive: true,
+          avatar: payload.avatar ?? existingByProvider.avatar ?? undefined,
+          firstName: payload.firstName ?? existingByProvider.firstName,
+          lastName: payload.lastName ?? existingByProvider.lastName,
+        });
+        return (await this.findById(existingByProvider.id)) as User;
+      }
+
       return existingByProvider;
     }
 
@@ -77,6 +87,7 @@ export class UsersService {
           avatar: payload.avatar ?? existingByEmail.avatar ?? undefined,
           firstName: payload.firstName ?? existingByEmail.firstName,
           lastName: payload.lastName ?? existingByEmail.lastName,
+          isActive: true,
         });
         return (await this.findById(existingByEmail.id)) as User;
       }

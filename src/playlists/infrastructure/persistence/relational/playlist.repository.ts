@@ -18,9 +18,8 @@ export class PlaylistRepository extends PlaylistRepositoryAbstract {
   ) {
     super();
     this.playlistRepository = this.dataSource.getRepository(PlaylistEntity);
-    this.playlistTrackRepository = this.dataSource.getRepository(
-      PlaylistTrackEntity,
-    );
+    this.playlistTrackRepository =
+      this.dataSource.getRepository(PlaylistTrackEntity);
   }
 
   async findById(id: string): Promise<Playlist | null> {

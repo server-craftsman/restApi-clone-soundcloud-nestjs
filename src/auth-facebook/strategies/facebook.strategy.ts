@@ -11,13 +11,16 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     private readonly usersService: UsersService,
   ) {
     const clientID = configService.get<string>('oauth.facebook.clientId');
-    const clientSecret = configService.get<string>('oauth.facebook.clientSecret');
+    const clientSecret = configService.get<string>(
+      'oauth.facebook.clientSecret',
+    );
     const callbackURL = configService.get<string>('oauth.facebook.callbackURL');
 
     super({
       clientID: clientID ?? 'dev-facebook-app-id',
       clientSecret: clientSecret ?? 'dev-facebook-app-secret',
-      callbackURL: callbackURL ?? 'http://localhost:3000/auth/facebook/callback',
+      callbackURL:
+        callbackURL ?? 'http://localhost:3000/auth/facebook/callback',
       profileFields: ['id', 'emails', 'name', 'photos'],
       enableProof: true,
     });

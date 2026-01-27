@@ -7,7 +7,6 @@ import { TracksModule } from './tracks';
 import { QueueModule } from './queue';
 import { MediaModule } from './media';
 import { HomeModule } from './home';
-import { UsersModule } from './users';
 import { AuthModule } from './auth';
 import { AuthGoogleModule } from './auth-google';
 import { AuthFacebookModule } from './auth-facebook';
@@ -31,7 +30,6 @@ import { StationsModule } from './stations';
     QueueModule,
     StorageModule,
     MailerModule,
-    UsersModule,
     AuthModule,
     AuthGoogleModule,
     AuthFacebookModule,
