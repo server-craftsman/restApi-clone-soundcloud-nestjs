@@ -1,0 +1,23 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+echo ""
+
+echo "📝 Running linter..."
+bun run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed. Please fix the errors and try again."
+  exit 1
+fi
+
+echo ""
+echo "🏗️  Building project..."
+bun run build
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Please fix the errors and try again."
+  exit 1
+fi
+
+echo ""
+echo "✅ All checks passed! Proceeding with commit..."
