@@ -78,8 +78,7 @@ export class CreateTrackDto {
   })
   @IsOptional()
   @IsISO8601()
-  @ValidateIf((o: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  @ValidateIf((o: CreateTrackDto) => {
     return o.privacy === TrackPrivacy.Scheduled;
   })
   @IsNotEmpty({
@@ -212,7 +211,7 @@ export class CreateTrackDto {
     type: [String],
   })
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): string[] | undefined => {
     if (typeof value === 'string') {
       return value.split(',').map((v) => v.trim());
     }
@@ -224,7 +223,7 @@ export class CreateTrackDto {
 
   @ApiPropertyOptional({ description: 'Blocked regions', type: [String] })
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }): string[] | undefined => {
     if (typeof value === 'string') {
       return value.split(',').map((v) => v.trim());
     }
