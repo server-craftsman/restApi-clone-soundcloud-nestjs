@@ -72,7 +72,9 @@ export class UpdateUserDto {
   @MaxLength(256)
   emailVerificationToken?: string | null;
 
-  @ApiPropertyOptional({ description: 'ISO datetime when verification token expires' })
+  @ApiPropertyOptional({
+    description: 'ISO datetime when verification token expires',
+  })
   @IsOptional()
   emailVerificationTokenExpiresAt?: Date | string | null;
 

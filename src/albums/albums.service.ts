@@ -6,10 +6,13 @@ import {
 import { AlbumRepository } from './infrastructure/persistence/relational/album.repository';
 import { Album } from './domain/album';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
+import { BaseService } from '../core/base/base.service';
 
 @Injectable()
-export class AlbumsService {
-  constructor(private readonly albumRepository: AlbumRepository) {}
+export class AlbumsService extends BaseService {
+  constructor(private readonly albumRepository: AlbumRepository) {
+    super();
+  }
 
   async createAlbum(userId: string, dto: CreateAlbumDto): Promise<Album> {
     return this.albumRepository.create({

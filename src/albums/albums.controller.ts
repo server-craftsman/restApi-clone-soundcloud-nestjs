@@ -8,6 +8,8 @@ import {
   Body,
   UseGuards,
   Query,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,15 +17,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AlbumsService } from './albums.service';
 import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../users/domain/user';
 import { AlbumDto, CreateAlbumDto, UpdateAlbumDto, AddTrackDto } from './dto';
+import { BaseController } from '../core/base/base.controller';
 
 @ApiTags('Albums')
 @Controller('albums')
-export class AlbumsController {
-  constructor(private readonly albumsService: AlbumsService) {}
+export class AlbumsController extends BaseController {
+  constructor(private readonly albumsService: AlbumsService) {
+    super();
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -33,9 +39,10 @@ export class AlbumsController {
   async createAlbum(
     @Body() dto: CreateAlbumDto,
     @CurrentUser() user: User,
-  ): Promise<AlbumDto> {
+    @Res() res: Response,
+  ): Promise<Response> {
     const album = await this.albumsService.createAlbum(user.id, dto);
-    return {
+    const albumDto: AlbumDto = {
       id: album.id,
       userId: album.userId,
       title: album.title,
@@ -43,14 +50,23 @@ export class AlbumsController {
       createdAt: album.createdAt,
       updatedAt: album.updatedAt,
     };
+    return this.sendSuccess(
+      res,
+      albumDto,
+      'Album created successfully',
+      HttpStatus.CREATED,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get album' })
   @ApiResponse({ status: 200, type: AlbumDto })
-  async getAlbum(@Param('id') id: string): Promise<AlbumDto> {
+  async getAlbum(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<Response> {
     const album = await this.albumsService.getAlbum(id);
-    return {
+    const albumDto: AlbumDto = {
       id: album.id,
       userId: album.userId,
       title: album.title,
@@ -58,6 +74,7 @@ export class AlbumsController {
       createdAt: album.createdAt,
       updatedAt: album.updatedAt,
     };
+    return this.sendSuccess(res, albumDto);
   }
 
   @Get()
@@ -69,18 +86,17 @@ export class AlbumsController {
     @CurrentUser() user: User,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
-  ) {
+    @Res() res: Response,
+  ): Promise<Response> {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [albums, total] = await this.albumsService.getUserAlbums(
       user.id,
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: albums,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    return this.sendPaginated(res, albums, total, page, pageSize);
   }
 
   @Put(':id')
@@ -92,9 +108,10 @@ export class AlbumsController {
     @Param('id') id: string,
     @Body() dto: UpdateAlbumDto,
     @CurrentUser() user: User,
-  ): Promise<AlbumDto> {
+    @Res() res: Response,
+  ): Promise<Response> {
     const album = await this.albumsService.updateAlbum(id, user.id, dto);
-    return {
+    const albumDto: AlbumDto = {
       id: album.id,
       userId: album.userId,
       title: album.title,
@@ -102,6 +119,7 @@ export class AlbumsController {
       createdAt: album.createdAt,
       updatedAt: album.updatedAt,
     };
+    return this.sendSuccess(res, albumDto, 'Album updated successfully');
   }
 
   @Delete(':id')
@@ -112,8 +130,15 @@ export class AlbumsController {
   async deleteAlbum(
     @Param('id') id: string,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ): Promise<Response> {
     await this.albumsService.deleteAlbum(id, user.id);
+    return this.sendSuccess(
+      res,
+      null,
+      'Album deleted successfully',
+      HttpStatus.NO_CONTENT,
+    );
   }
 
   @Post(':id/tracks')
@@ -125,8 +150,15 @@ export class AlbumsController {
     @Param('id') albumId: string,
     @Body() dto: AddTrackDto,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ): Promise<Response> {
     await this.albumsService.addTrackToAlbum(albumId, dto.trackId, user.id);
+    return this.sendSuccess(
+      res,
+      null,
+      'Track added to album',
+      HttpStatus.CREATED,
+    );
   }
 
   @Delete(':id/tracks/:trackId')
@@ -138,8 +170,15 @@ export class AlbumsController {
     @Param('id') albumId: string,
     @Param('trackId') trackId: string,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ): Promise<Response> {
     await this.albumsService.removeTrackFromAlbum(albumId, trackId, user.id);
+    return this.sendSuccess(
+      res,
+      null,
+      'Track removed from album',
+      HttpStatus.NO_CONTENT,
+    );
   }
 
   @Get(':id/tracks')
@@ -149,17 +188,16 @@ export class AlbumsController {
     @Param('id') albumId: string,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
-  ) {
+    @Res() res: Response,
+  ): Promise<Response> {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [tracks, total] = await this.albumsService.getAlbumTracks(
       albumId,
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: tracks,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    return this.sendPaginated(res, tracks, total, page, pageSize);
   }
 }

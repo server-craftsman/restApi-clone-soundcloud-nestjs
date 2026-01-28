@@ -31,15 +31,24 @@ export class TrackDto {
   durationSeconds?: number | null;
 
   // Core metadata
-  @ApiPropertyOptional({ example: 'https://example.com/artwork.jpg', nullable: true })
+  @ApiPropertyOptional({
+    example: 'https://example.com/artwork.jpg',
+    nullable: true,
+  })
   @Expose()
   artworkUrl?: string | null;
 
-  @ApiPropertyOptional({ example: 'https://soundcloud.com/artist/track', nullable: true })
+  @ApiPropertyOptional({
+    example: 'https://soundcloud.com/artist/track',
+    nullable: true,
+  })
   @Expose()
   trackLink?: string | null;
 
-  @ApiPropertyOptional({ example: 'Artist Name, Another Artist', nullable: true })
+  @ApiPropertyOptional({
+    example: 'Artist Name, Another Artist',
+    nullable: true,
+  })
   @Expose()
   mainArtists?: string | null;
 
@@ -61,7 +70,10 @@ export class TrackDto {
   scheduledAt?: Date | null;
 
   // Advanced details
-  @ApiPropertyOptional({ example: 'https://store.example.com/track', nullable: true })
+  @ApiPropertyOptional({
+    example: 'https://store.example.com/track',
+    nullable: true,
+  })
   @Expose()
   buyLink?: string | null;
 
@@ -124,7 +136,10 @@ export class TrackDto {
   @Expose()
   showInsightsToPublic!: boolean;
 
-  @ApiProperty({ example: 'worldwide', enum: ['worldwide', 'exclusive-regions', 'blocked-regions'] })
+  @ApiProperty({
+    example: 'worldwide',
+    enum: ['worldwide', 'exclusive-regions', 'blocked-regions'],
+  })
   @Expose()
   geoblockingType!: string;
 
@@ -142,7 +157,10 @@ export class TrackDto {
   previewStartTime?: number | null;
 
   // Licensing
-  @ApiProperty({ example: 'all-rights-reserved', enum: ['all-rights-reserved', 'creative-commons'] })
+  @ApiProperty({
+    example: 'all-rights-reserved',
+    enum: ['all-rights-reserved', 'creative-commons'],
+  })
   @Expose()
   licenseType!: string;
 

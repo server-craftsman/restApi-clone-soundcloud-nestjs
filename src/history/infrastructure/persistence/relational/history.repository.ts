@@ -3,11 +3,13 @@ import { DataSource, Repository } from 'typeorm';
 import { HistoryEntity } from './entities/history.entity';
 import { HistoryMapper } from './mappers/history.mapper';
 import { HistoryRepositoryAbstract } from './repositories/history.repository.abstract';
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
 import { History } from '../../../domain/history';
 
 @Injectable()
 export class HistoryRepository extends HistoryRepositoryAbstract {
   private readonly repository: Repository<HistoryEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<HistoryEntity>;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -15,11 +17,20 @@ export class HistoryRepository extends HistoryRepositoryAbstract {
   ) {
     super();
     this.repository = this.dataSource.getRepository(HistoryEntity);
+    this.baseRepository = new BaseRepositoryImpl<HistoryEntity>(
+      dataSource,
+      HistoryEntity,
+    );
   }
 
   async findById(id: string): Promise<History | null> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.baseRepository.findById(id);
     return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAll(limit: number, offset: number): Promise<[History[], number]> {
+    const [entities, total] = await this.baseRepository.findAll(offset, limit);
+    return [this.mapper.toDomainArray(entities), total];
   }
 
   async findAllByUser(

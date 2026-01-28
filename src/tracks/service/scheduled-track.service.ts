@@ -15,13 +15,13 @@ export class ScheduledTrackService {
     try {
       this.logger.debug('Checking for scheduled tracks to publish...');
       const publishedTracks = await this.tracksService.publishScheduledTracks();
-      
+
       if (publishedTracks.length > 0) {
         this.logger.log(`Published ${publishedTracks.length} scheduled tracks`);
       } else {
         this.logger.debug('No scheduled tracks ready for publishing');
       }
-      
+
       return publishedTracks;
     } catch (error) {
       this.logger.error('Error publishing scheduled tracks:', error);

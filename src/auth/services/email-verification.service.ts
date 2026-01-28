@@ -12,18 +12,28 @@ export class EmailVerificationService {
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
   ) {
-    this.appUrl = this.configService.get<string>('APP_URL') || 'http://localhost:3000';
-    this.verificationTokenExpirationMinutes = this.configService.get<number>('EMAIL_VERIFICATION_EXPIRES_MINUTES') || 24 * 60;
+    this.appUrl =
+      this.configService.get<string>('APP_URL') || 'http://localhost:3000';
+    this.verificationTokenExpirationMinutes =
+      this.configService.get<number>('EMAIL_VERIFICATION_EXPIRES_MINUTES') ||
+      24 * 60;
   }
 
   /**
    * Send verification email with token link
    */
-  async sendVerificationEmail(email: string, token: string, firstName: string): Promise<void> {
+  async sendVerificationEmail(
+    email: string,
+    token: string,
+    firstName: string,
+  ): Promise<void> {
     const verificationLink = `${this.appUrl}/auth/verify-email?token=${token}`;
-    
+
     const subject = 'Verify Your Email Address';
-    const html = this.generateVerificationEmailHtml(firstName, verificationLink);
+    const html = this.generateVerificationEmailHtml(
+      firstName,
+      verificationLink,
+    );
 
     await this.mailerService.sendMail(email, subject, html);
 
@@ -33,7 +43,10 @@ export class EmailVerificationService {
   /**
    * Generate HTML template for verification email
    */
-  private generateVerificationEmailHtml(firstName: string, verificationLink: string): string {
+  private generateVerificationEmailHtml(
+    firstName: string,
+    verificationLink: string,
+  ): string {
     return `
       <!DOCTYPE html>
       <html>
@@ -79,7 +92,9 @@ export class EmailVerificationService {
    */
   generateVerificationTokenExpiry(): Date {
     const expiryDate = new Date();
-    expiryDate.setMinutes(expiryDate.getMinutes() + this.verificationTokenExpirationMinutes);
+    expiryDate.setMinutes(
+      expiryDate.getMinutes() + this.verificationTokenExpirationMinutes,
+    );
     return expiryDate;
   }
 
@@ -88,7 +103,8 @@ export class EmailVerificationService {
    */
   isTokenExpired(expiresAt: Date | string | null | undefined): boolean {
     if (!expiresAt) return true;
-    const expiryDate = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt;
+    const expiryDate =
+      typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt;
     if (!expiryDate || Number.isNaN(expiryDate.getTime())) return true;
     return new Date() > expiryDate;
   }

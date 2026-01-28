@@ -5,6 +5,8 @@ export const envValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   PORT: Joi.number().default(3000),
+  API_PREFIX: Joi.string().default('api'),
+  API_VERSION: Joi.string().default('v1'),
   // Database (defaults for development)
   POSTGRES_HOST: Joi.string().default('127.0.0.1'),
   POSTGRES_PORT: Joi.number().default(5432),

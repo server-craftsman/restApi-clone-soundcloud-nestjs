@@ -15,7 +15,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TrackPrivacy, LicenseType, GeoblockingType } from '../../enums';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 
 export class CreateTrackDto {
   @ApiProperty({ maxLength: 255 })
@@ -73,15 +73,24 @@ export class CreateTrackDto {
   @IsEnum(TrackPrivacy)
   privacy: TrackPrivacy = TrackPrivacy.Public;
 
-  @ApiPropertyOptional({ description: 'Scheduled publish date (required if privacy is scheduled)' })
+  @ApiPropertyOptional({
+    description: 'Scheduled publish date (required if privacy is scheduled)',
+  })
   @IsOptional()
   @IsISO8601()
-  @ValidateIf(o => o.privacy === TrackPrivacy.Scheduled)
-  @IsNotEmpty({ message: 'Scheduled date is required when privacy is set to scheduled' })
+  @ValidateIf((o: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return o.privacy === TrackPrivacy.Scheduled;
+  })
+  @IsNotEmpty({
+    message: 'Scheduled date is required when privacy is set to scheduled',
+  })
   scheduledAt?: string;
 
   // Advanced details
-  @ApiPropertyOptional({ description: 'Link where fans can purchase the track' })
+  @ApiPropertyOptional({
+    description: 'Link where fans can purchase the track',
+  })
   @IsOptional()
   @IsUrl()
   @MaxLength(512)
@@ -110,7 +119,10 @@ export class CreateTrackDto {
   @MaxLength(50)
   isrc?: string;
 
-  @ApiPropertyOptional({ description: 'Track contains explicit content', default: false })
+  @ApiPropertyOptional({
+    description: 'Track contains explicit content',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
@@ -123,13 +135,19 @@ export class CreateTrackDto {
   pLine?: string;
 
   // Permissions
-  @ApiPropertyOptional({ description: 'Allow direct downloads', default: false })
+  @ApiPropertyOptional({
+    description: 'Allow direct downloads',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   enableDirectDownloads?: boolean = false;
 
-  @ApiPropertyOptional({ description: 'Enable offline listening', default: true })
+  @ApiPropertyOptional({
+    description: 'Enable offline listening',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
@@ -154,52 +172,82 @@ export class CreateTrackDto {
   enableAppPlayback?: boolean = true;
 
   // Engagement privacy (Pro features)
-  @ApiPropertyOptional({ description: 'Allow people to comment', default: true })
+  @ApiPropertyOptional({
+    description: 'Allow people to comment',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   allowComments?: boolean = true;
 
-  @ApiPropertyOptional({ description: 'Show comments to public', default: true })
+  @ApiPropertyOptional({
+    description: 'Show comments to public',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   showCommentsToPublic?: boolean = true;
 
-  @ApiPropertyOptional({ description: 'Show insights to public', default: false })
+  @ApiPropertyOptional({
+    description: 'Show insights to public',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   showInsightsToPublic?: boolean = false;
 
-  @ApiPropertyOptional({ enum: GeoblockingType, default: GeoblockingType.Worldwide })
+  @ApiPropertyOptional({
+    enum: GeoblockingType,
+    default: GeoblockingType.Worldwide,
+  })
   @IsOptional()
   @IsEnum(GeoblockingType)
   geoblockingType?: GeoblockingType = GeoblockingType.Worldwide;
 
-  @ApiPropertyOptional({ description: 'Allowed regions for exclusive access', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Allowed regions for exclusive access',
+    type: [String],
+  })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.split(',').map((v) => v.trim());
+    }
+    return value;
+  })
   @IsArray()
   @IsString({ each: true })
-  @Type(() => String)
   allowedRegions?: string[];
 
   @ApiPropertyOptional({ description: 'Blocked regions', type: [String] })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.split(',').map((v) => v.trim());
+    }
+    return value;
+  })
   @IsArray()
   @IsString({ each: true })
-  @Type(() => String)
   blockedRegions?: string[];
 
   // Audio preview
-  @ApiPropertyOptional({ description: 'Preview start time in seconds for 20-second clip' })
+  @ApiPropertyOptional({
+    description: 'Preview start time in seconds for 20-second clip',
+  })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   previewStartTime?: number;
 
   // Licensing
-  @ApiPropertyOptional({ enum: LicenseType, default: LicenseType.AllRightsReserved })
+  @ApiPropertyOptional({
+    enum: LicenseType,
+    default: LicenseType.AllRightsReserved,
+  })
   @IsOptional()
   @IsEnum(LicenseType)
   licenseType?: LicenseType = LicenseType.AllRightsReserved;

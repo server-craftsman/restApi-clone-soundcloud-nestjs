@@ -5,7 +5,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { SubscriptionPlan, EmailVerificationStatus } from '../../../../../enums';
+import {
+  SubscriptionPlan,
+  EmailVerificationStatus,
+} from '../../../../../enums';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -44,7 +47,11 @@ export class UserEntity {
   })
   subscriptionPlan!: SubscriptionPlan;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'subscription_expires_at' })
+  @Column({
+    type: 'timestamptz',
+    nullable: true,
+    name: 'subscription_expires_at',
+  })
   subscriptionExpiresAt?: Date | null;
 
   @Column({ type: 'boolean', default: false, name: 'is_active' })
@@ -59,10 +66,19 @@ export class UserEntity {
   })
   emailVerificationStatus?: EmailVerificationStatus | null;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'email_verification_token' })
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    name: 'email_verification_token',
+  })
   emailVerificationToken?: string | null;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'email_verification_token_expires_at' })
+  @Column({
+    type: 'timestamptz',
+    nullable: true,
+    name: 'email_verification_token_expires_at',
+  })
   emailVerificationTokenExpiresAt?: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })

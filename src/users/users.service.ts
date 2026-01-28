@@ -4,10 +4,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './domain/user';
 import { UserRepository } from './infrastructure/persistence/relational/user.repository';
 import { SubscriptionPlan } from '../enums';
+import { BaseService } from '../core/base/base.service';
 
 @Injectable()
-export class UsersService {
-  constructor(private readonly userRepository: UserRepository) {}
+export class UsersService extends BaseService {
+  constructor(private readonly userRepository: UserRepository) {
+    super();
+  }
 
   async create(dto: CreateUserDto): Promise<User> {
     return this.userRepository.create({

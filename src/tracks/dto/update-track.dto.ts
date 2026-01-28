@@ -1,7 +1,7 @@
-import { 
-  IsOptional, 
-  IsString, 
-  MaxLength, 
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
   IsEnum,
   IsBoolean,
   IsUrl,
@@ -66,15 +66,24 @@ export class UpdateTrackDto {
   @IsEnum(TrackPrivacy)
   privacy?: TrackPrivacy;
 
-  @ApiPropertyOptional({ description: 'Scheduled publish date (required if privacy is scheduled)' })
+  @ApiPropertyOptional({
+    description: 'Scheduled publish date (required if privacy is scheduled)',
+  })
   @IsOptional()
   @IsISO8601()
-  @ValidateIf(o => o.privacy === TrackPrivacy.Scheduled)
-  @IsNotEmpty({ message: 'Scheduled date is required when privacy is set to scheduled' })
+  @ValidateIf((o: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return o.privacy === TrackPrivacy.Scheduled;
+  })
+  @IsNotEmpty({
+    message: 'Scheduled date is required when privacy is set to scheduled',
+  })
   scheduledAt?: string;
 
   // Advanced details
-  @ApiPropertyOptional({ description: 'Link where fans can purchase the track' })
+  @ApiPropertyOptional({
+    description: 'Link where fans can purchase the track',
+  })
   @IsOptional()
   @IsUrl()
   @MaxLength(512)
@@ -170,7 +179,10 @@ export class UpdateTrackDto {
   @IsEnum(GeoblockingType)
   geoblockingType?: GeoblockingType;
 
-  @ApiPropertyOptional({ description: 'Allowed regions for exclusive access', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Allowed regions for exclusive access',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -185,7 +197,9 @@ export class UpdateTrackDto {
   blockedRegions?: string[];
 
   // Audio preview
-  @ApiPropertyOptional({ description: 'Preview start time in seconds for 20-second clip' })
+  @ApiPropertyOptional({
+    description: 'Preview start time in seconds for 20-second clip',
+  })
   @IsOptional()
   @IsNumber()
   @IsPositive()

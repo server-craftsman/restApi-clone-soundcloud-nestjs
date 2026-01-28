@@ -32,6 +32,10 @@ export default () => ({
     title: 'SoundCloud Clone API',
     version: '1.0.0',
   },
+  api: {
+    prefix: getEnv('API_PREFIX', 'api'),
+    version: getEnv('API_VERSION', 'v1'),
+  },
   database: getDatabaseConfig(),
   redis: {
     host: getEnv('REDIS_HOST', '127.0.0.1'),

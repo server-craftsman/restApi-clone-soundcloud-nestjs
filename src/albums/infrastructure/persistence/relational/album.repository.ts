@@ -4,26 +4,38 @@ import { AlbumEntity } from './entities/album.entity';
 import { AlbumTrackEntity } from './entities/album-track.entity';
 import { AlbumMapper } from './mappers/album.mapper';
 import { AlbumRepositoryAbstract } from './repositories/album.repository.abstract';
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
 import { Album } from '../../../domain/album';
 import { AlbumTrack } from '../../../domain/album-track';
 
 @Injectable()
 export class AlbumRepository extends AlbumRepositoryAbstract {
-  private readonly albumRepository: Repository<AlbumEntity>;
+  private readonly typOrmRepository: Repository<AlbumEntity>;
   private readonly albumTrackRepository: Repository<AlbumTrackEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<AlbumEntity>;
 
   constructor(
-    private readonly dataSource: DataSource,
+    dataSource: DataSource,
     private readonly mapper: AlbumMapper,
   ) {
     super();
-    this.albumRepository = this.dataSource.getRepository(AlbumEntity);
-    this.albumTrackRepository = this.dataSource.getRepository(AlbumTrackEntity);
+    this.typOrmRepository = dataSource.getRepository(AlbumEntity);
+    this.albumTrackRepository = dataSource.getRepository(AlbumTrackEntity);
+    this.baseRepository = new BaseRepositoryImpl<AlbumEntity>(
+      dataSource,
+      AlbumEntity,
+    );
   }
 
+  // Override base methods to apply mapper transformation
   async findById(id: string): Promise<Album | null> {
-    const entity = await this.albumRepository.findOne({ where: { id } });
+    const entity = await this.baseRepository.findById(id);
     return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAll(limit: number, offset: number): Promise<[Album[], number]> {
+    const [entities, total] = await this.baseRepository.findAll(limit, offset);
+    return [this.mapper.toDomainArray(entities), total];
   }
 
   async findAllByUser(
@@ -31,7 +43,7 @@ export class AlbumRepository extends AlbumRepositoryAbstract {
     limit: number,
     offset: number,
   ): Promise<[Album[], number]> {
-    const [entities, total] = await this.albumRepository.findAndCount({
+    const [entities, total] = await this.typOrmRepository.findAndCount({
       where: { userId },
       take: limit,
       skip: offset,
@@ -42,23 +54,24 @@ export class AlbumRepository extends AlbumRepositoryAbstract {
 
   async create(album: Partial<Album>): Promise<Album> {
     const entity = this.mapper.toEntity(album);
-    const saved = await this.albumRepository.save(entity);
+    const saved = await this.typOrmRepository.save(entity);
     return this.mapper.toDomain(saved);
   }
 
   async update(id: string, album: Partial<Album>): Promise<Album> {
-    const entity = await this.albumRepository.findOne({ where: { id } });
+    const entity = await this.typOrmRepository.findOne({ where: { id } });
     if (!entity) throw new Error('Album not found');
 
     Object.assign(entity, this.mapper.toEntity(album));
-    const saved = await this.albumRepository.save(entity);
+    const saved = await this.typOrmRepository.save(entity);
     return this.mapper.toDomain(saved);
   }
 
   async delete(id: string): Promise<void> {
-    await this.albumRepository.delete(id);
+    await this.typOrmRepository.delete(id);
   }
 
+  // Custom methods
   async addTrack(
     albumId: string,
     trackId: string,

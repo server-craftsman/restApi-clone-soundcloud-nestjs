@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { join } from 'path';
-import * as hbs from 'hbs';
+import { Express } from 'express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -11,7 +11,7 @@ config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const expressApp = app.getHttpAdapter().getInstance();
+  const expressApp = app.getHttpAdapter().getInstance() as Express;
   const configService = app.get(ConfigService);
 
   const allowedOrigins = configService.get<string[]>('cors.origin');
@@ -32,6 +32,16 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  // Set global API prefix from configuration (excludes home module)
+  const apiPrefix = configService.get<string>('api.prefix');
+  const apiVersion = configService.get<string>('api.version');
+  const globalPrefix = `${apiPrefix}/${apiVersion}`;
+
+  // Apply prefix to all routes except home (which is at root /)
+  app.setGlobalPrefix(globalPrefix, {
+    exclude: ['/', '/favicon.ico'],
+  });
 
   const port = configService.get<number>('PORT') || 3000;
 

@@ -7,7 +7,7 @@ export class VerificationPageController {
   verifyEmailPage(@Query('token') token: string) {
     return {
       token,
-      apiUrl: process.env.APP_URL || 'http://localhost:8888',
+      apiUrl: process.env.APP_URL,
     };
   }
 
@@ -15,7 +15,7 @@ export class VerificationPageController {
   @Render('email-verified')
   emailVerifiedPage() {
     return {
-      appUrl: process.env.APP_URL || 'http://localhost:3000',
+      appUrl: process.env.FRONT_END,
     };
   }
 
@@ -24,7 +24,7 @@ export class VerificationPageController {
   verificationErrorPage(@Query('reason') reason?: string) {
     return {
       reason: reason || 'Unknown error',
-      appUrl: process.env.APP_URL || 'http://localhost:3000',
+      appUrl: process.env.FRONT_END,
     };
   }
 }

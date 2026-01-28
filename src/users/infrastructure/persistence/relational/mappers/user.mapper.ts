@@ -21,7 +21,8 @@ export class UserMapper {
       isActive: entity.isActive,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      emailVerificationStatus: entity.emailVerificationStatus ?? EmailVerificationStatus.Pending,
+      emailVerificationStatus:
+        entity.emailVerificationStatus ?? EmailVerificationStatus.Pending,
       emailVerificationToken: entity.emailVerificationToken,
       emailVerificationTokenExpiresAt: entity.emailVerificationTokenExpiresAt,
     };

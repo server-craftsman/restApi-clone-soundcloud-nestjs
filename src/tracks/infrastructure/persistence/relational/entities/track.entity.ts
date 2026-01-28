@@ -5,7 +5,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TrackStatus, TrackPrivacy, LicenseType, GeoblockingType } from '../../../../../enums';
+import {
+  TrackStatus,
+  TrackPrivacy,
+  LicenseType,
+  GeoblockingType,
+} from '../../../../../enums';
 
 @Entity({ name: 'tracks' })
 export class TrackEntity {
@@ -85,7 +90,12 @@ export class TrackEntity {
   @Column({ name: 'buy_link', type: 'varchar', length: 512, nullable: true })
   buyLink?: string | null;
 
-  @Column({ name: 'record_label', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'record_label',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   recordLabel?: string | null;
 
   @Column({ name: 'release_date', type: 'date', nullable: true })
@@ -97,7 +107,11 @@ export class TrackEntity {
   @Column({ type: 'varchar', length: 50, nullable: true })
   isrc?: string | null;
 
-  @Column({ name: 'contains_explicit_content', type: 'boolean', default: false })
+  @Column({
+    name: 'contains_explicit_content',
+    type: 'boolean',
+    default: false,
+  })
   containsExplicitContent!: boolean;
 
   @Column({ name: 'p_line', type: 'varchar', length: 512, nullable: true })
@@ -129,7 +143,12 @@ export class TrackEntity {
   @Column({ name: 'show_insights_to_public', type: 'boolean', default: false })
   showInsightsToPublic!: boolean;
 
-  @Column({ name: 'geoblocking_type', type: 'enum', enum: GeoblockingType, default: GeoblockingType.Worldwide })
+  @Column({
+    name: 'geoblocking_type',
+    type: 'enum',
+    enum: GeoblockingType,
+    default: GeoblockingType.Worldwide,
+  })
   geoblockingType!: GeoblockingType;
 
   @Column({ name: 'allowed_regions', type: 'json', nullable: true })
@@ -139,8 +158,8 @@ export class TrackEntity {
   blockedRegions?: string[] | null;
 
   // Audio preview
-  @Column({ 
-    name: 'preview_start_time', 
+  @Column({
+    name: 'preview_start_time',
     type: 'decimal',
     precision: 10,
     scale: 2,
@@ -153,7 +172,12 @@ export class TrackEntity {
   previewStartTime?: number | null;
 
   // Licensing
-  @Column({ name: 'license_type', type: 'enum', enum: LicenseType, default: LicenseType.AllRightsReserved })
+  @Column({
+    name: 'license_type',
+    type: 'enum',
+    enum: LicenseType,
+    default: LicenseType.AllRightsReserved,
+  })
   licenseType!: LicenseType;
 
   @CreateDateColumn({ name: 'created_at' })

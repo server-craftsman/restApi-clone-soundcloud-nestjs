@@ -4,6 +4,7 @@ import { StationEntity } from './entities/station.entity';
 import { StationTrackEntity } from './entities/station-track.entity';
 import { StationMapper } from './mappers/station.mapper';
 import { StationRepositoryAbstract } from './repositories/station.repository.abstract';
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
 import { Station } from '../../../domain/station';
 import { StationTrack } from '../../../domain/station-track';
 
@@ -11,6 +12,7 @@ import { StationTrack } from '../../../domain/station-track';
 export class StationRepository extends StationRepositoryAbstract {
   private readonly stationRepository: Repository<StationEntity>;
   private readonly stationTrackRepository: Repository<StationTrackEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<StationEntity>;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -20,11 +22,20 @@ export class StationRepository extends StationRepositoryAbstract {
     this.stationRepository = this.dataSource.getRepository(StationEntity);
     this.stationTrackRepository =
       this.dataSource.getRepository(StationTrackEntity);
+    this.baseRepository = new BaseRepositoryImpl<StationEntity>(
+      dataSource,
+      StationEntity,
+    );
   }
 
   async findById(id: string): Promise<Station | null> {
-    const entity = await this.stationRepository.findOne({ where: { id } });
+    const entity = await this.baseRepository.findById(id);
     return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAll(limit: number, offset: number): Promise<[Station[], number]> {
+    const [entities, total] = await this.baseRepository.findAll(offset, limit);
+    return [this.mapper.toDomainArray(entities), total];
   }
 
   async findAllByUser(
@@ -55,6 +66,15 @@ export class StationRepository extends StationRepositoryAbstract {
 
   async create(station: Partial<Station>): Promise<Station> {
     const entity = this.mapper.toEntity(station);
+    const saved = await this.stationRepository.save(entity);
+    return this.mapper.toDomain(saved);
+  }
+
+  async update(id: string, station: Partial<Station>): Promise<Station> {
+    const entity = await this.stationRepository.findOne({ where: { id } });
+    if (!entity) throw new Error('Station not found');
+
+    Object.assign(entity, this.mapper.toEntity(station));
     const saved = await this.stationRepository.save(entity);
     return this.mapper.toDomain(saved);
   }

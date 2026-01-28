@@ -3,11 +3,13 @@ import { DataSource, Repository } from 'typeorm';
 import { LikeEntity } from './entities/like.entity';
 import { LikeMapper } from './mappers/like.mapper';
 import { LikeRepositoryAbstract } from './repositories/like.repository.abstract';
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
 import { Like } from '../../../domain/like';
 
 @Injectable()
 export class LikeRepository extends LikeRepositoryAbstract {
   private readonly repository: Repository<LikeEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<LikeEntity>;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -15,11 +17,20 @@ export class LikeRepository extends LikeRepositoryAbstract {
   ) {
     super();
     this.repository = this.dataSource.getRepository(LikeEntity);
+    this.baseRepository = new BaseRepositoryImpl<LikeEntity>(
+      dataSource,
+      LikeEntity,
+    );
   }
 
   async findById(id: string): Promise<Like | null> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.baseRepository.findById(id);
     return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAll(limit: number, offset: number): Promise<[Like[], number]> {
+    const [entities, total] = await this.baseRepository.findAll(offset, limit);
+    return [this.mapper.toDomainArray(entities), total];
   }
 
   async findByUserAndTrack(

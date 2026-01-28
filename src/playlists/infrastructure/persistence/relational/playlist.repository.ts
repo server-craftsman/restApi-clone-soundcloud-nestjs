@@ -4,6 +4,7 @@ import { PlaylistEntity } from './entities/playlist.entity';
 import { PlaylistTrackEntity } from './entities/playlist-track.entity';
 import { PlaylistMapper } from './mappers/playlist.mapper';
 import { PlaylistRepositoryAbstract } from './repositories/playlist.repository.abstract';
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
 import { Playlist } from '../../../domain/playlist';
 import { PlaylistTrack } from '../../../domain/playlist-track';
 
@@ -11,6 +12,7 @@ import { PlaylistTrack } from '../../../domain/playlist-track';
 export class PlaylistRepository extends PlaylistRepositoryAbstract {
   private readonly playlistRepository: Repository<PlaylistEntity>;
   private readonly playlistTrackRepository: Repository<PlaylistTrackEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<PlaylistEntity>;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -20,11 +22,20 @@ export class PlaylistRepository extends PlaylistRepositoryAbstract {
     this.playlistRepository = this.dataSource.getRepository(PlaylistEntity);
     this.playlistTrackRepository =
       this.dataSource.getRepository(PlaylistTrackEntity);
+    this.baseRepository = new BaseRepositoryImpl<PlaylistEntity>(
+      dataSource,
+      PlaylistEntity,
+    );
   }
 
   async findById(id: string): Promise<Playlist | null> {
-    const entity = await this.playlistRepository.findOne({ where: { id } });
+    const entity = await this.baseRepository.findById(id);
     return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findAll(limit: number, offset: number): Promise<[Playlist[], number]> {
+    const [entities, total] = await this.baseRepository.findAll(offset, limit);
+    return [this.mapper.toDomainArray(entities), total];
   }
 
   async findAllByUser(

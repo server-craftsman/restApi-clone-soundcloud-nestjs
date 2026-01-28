@@ -5,6 +5,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Auth')
@@ -13,13 +14,21 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('email/register')
-  @ApiResponse({ status: 201, type: AuthResponseDto, description: 'User registered successfully. Verification email sent.' })
-  @ApiResponse({ status: 400, description: 'User already exists or validation error' })
+  @ApiResponse({
+    status: 201,
+    type: AuthResponseDto,
+    description: 'User registered successfully. Verification email sent.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User already exists or validation error',
+  })
   async register(@Body() dto: SignUpDto): Promise<AuthResponseDto> {
     const { user } = await this.authService.signUp(dto);
     return {
-      message: 'Verification email sent. Please verify your email before signing in.',
-    user: {
+      message:
+        'Verification email sent. Please verify your email before signing in.',
+      user: {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
@@ -29,10 +38,18 @@ export class AuthController {
   }
 
   @Post('email/login')
-  @ApiResponse({ status: 200, type: AuthResponseDto, description: 'User logged in successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials or email not verified' })
+  @ApiResponse({
+    status: 200,
+    type: AuthResponseDto,
+    description: 'User logged in successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials or email not verified',
+  })
   async login(@Body() dto: SignInDto): Promise<AuthResponseDto> {
-    const { user, accessToken, refreshToken } = await this.authService.signIn(dto);
+    const { user, accessToken, refreshToken } =
+      await this.authService.signIn(dto);
     return {
       accessToken,
       refreshToken,
@@ -47,10 +64,18 @@ export class AuthController {
 
   @Post('verify-email')
   @ApiBody({ type: VerifyEmailDto })
-  @ApiResponse({ status: 200, type: AuthResponseDto, description: 'Email verified successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid or expired verification token' })
+  @ApiResponse({
+    status: 200,
+    type: AuthResponseDto,
+    description: 'Email verified successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token',
+  })
   async verifyEmail(@Body() dto: VerifyEmailDto): Promise<AuthResponseDto> {
-    const { user, accessToken, refreshToken } = await this.authService.verifyEmail(dto);
+    const { user, accessToken, refreshToken } =
+      await this.authService.verifyEmail(dto);
     return {
       accessToken,
       refreshToken,
@@ -65,9 +90,30 @@ export class AuthController {
 
   @Post('refresh')
   @ApiBody({ type: RefreshTokenDto })
-  @ApiResponse({ status: 200, description: 'New access token and refresh token generated' })
+  @ApiResponse({
+    status: 200,
+    description: 'New access token and refresh token generated',
+  })
   @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
-  async refreshToken(@Body() dto: RefreshTokenDto): Promise<{ accessToken: string; refreshToken: string }> {
+  async refreshToken(
+    @Body() dto: RefreshTokenDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     return this.authService.refreshAccessToken(dto);
+  }
+
+  @Post('resend/verification')
+  @ApiBody({ type: ResendVerificationDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification email sent successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User not found or email already verified',
+  })
+  async resendVerification(
+    @Body() dto: ResendVerificationDto,
+  ): Promise<{ message: string }> {
+    return this.authService.resendVerificationEmail(dto);
   }
 }

@@ -279,17 +279,27 @@ export * from './user.mapper';
 
 ### 6.2 Content Requirements
 
-- MUST be an `abstract class {Entity}RepositoryAbstract`
+- MUST be a **standalone** `abstract class {Entity}RepositoryAbstract`
+- **MUST NOT** extend BaseRepository (composition over inheritance)
 - MUST define all public repository methods as abstract
+- MUST include standard CRUD methods: `findById()`, `findAll()`, `create()`, `update()` (if applicable), `delete()`
 - MUST use domain types in signatures (not entities)
 - Return types MUST be Promises
 - NO implementation, only method signatures
+- NO constructor needed (standalone abstract class)
 
 ### 6.3 Required Methods
 
-- **Read Operations**: `abstract findById()`, `abstract findByField()`, `abstract findAll()`
-- **Write Operations**: `abstract create()`, `abstract update()`, `abstract delete()`
-- **Custom**: Domain-specific queries
+All abstract repositories must declare these standard CRUD methods:
+
+- **Read Operations**:
+  - `abstract findById(id: string): Promise<{Entity} | null>`
+  - `abstract findAll(limit: number, offset: number): Promise<[{Entity}[], number]>`
+- **Write Operations**:
+  - `abstract create({entity}: Partial<{Entity}>): Promise<{Entity}>`
+  - `abstract update(id: string, {entity}: Partial<{Entity}>): Promise<{Entity}>` (if updates supported)
+  - `abstract delete(id: string): Promise<void>`
+- **Custom Methods**: Domain-specific queries
 
 ### 6.4 Example
 
@@ -298,13 +308,17 @@ export * from './user.mapper';
 import { Track } from '../../../../domain/track';
 
 export abstract class TrackRepositoryAbstract {
+  // CRUD methods from BaseRepository pattern
   abstract findById(id: string): Promise<Track | null>;
   abstract findAll(limit: number, offset: number): Promise<[Track[], number]>;
-  abstract findByTitle(title: string): Promise<Track[]>;
   abstract create(track: Partial<Track>): Promise<Track>;
   abstract update(id: string, track: Partial<Track>): Promise<Track>;
-  abstract updateStatus(id: string, status: string): Promise<void>;
   abstract delete(id: string): Promise<void>;
+
+  // Custom methods specific to Track domain
+  abstract findByTitle(title: string): Promise<Track[]>;
+  abstract updateStatus(id: string, status: string): Promise<void>;
+  abstract getTotalDurationSecondsByUser(userId: string): Promise<number>;
 }
 ```
 
@@ -330,39 +344,120 @@ export * from './user.repository.abstract';
 
 - MUST be `@Injectable()` provider
 - MUST extend `{Entity}RepositoryAbstract` abstract class
+- MUST use **BaseRepositoryImpl** via composition for generic CRUD operations
 - MUST use dependency injection for `DataSource` and `{Entity}Mapper`
-- MUST use `this.mapper` for all transformations
+- MUST use `this.mapper` for all transformations (Entity ↔ Domain)
 - MUST return domain types (not entities)
 
-### 7.3 Constructor Pattern
+### 7.3 Architecture Pattern
+
+**Composition over Inheritance**: Instead of extending BaseRepository, concrete repositories:
+
+1. Extend their domain-specific abstract class
+2. Use `BaseRepositoryImpl` instance for generic CRUD methods
+3. Apply mapper transformations on top of base operations
+
+**Benefits**:
+
+- Abstract repositories remain pure interfaces (no implementation coupling)
+- Generic CRUD logic is reused via BaseRepositoryImpl
+- Concrete repositories focus on domain-specific logic and mapping
+
+### 7.4 Constructor Pattern
 
 ```typescript
+import { BaseRepositoryImpl } from '../../../../core/base/base.repository.impl';
+
 @Injectable()
 export class TrackRepository extends TrackRepositoryAbstract {
-  private readonly repository: Repository<TrackEntity>;
+  private readonly typOrmRepository: Repository<TrackEntity>;
+  private readonly baseRepository: BaseRepositoryImpl<TrackEntity>;
 
   constructor(
-    private dataSource: DataSource,
+    dataSource: DataSource,
     private mapper: TrackMapper,
   ) {
     super(); // Call abstract class constructor
-    this.repository = dataSource.getRepository(TrackEntity);
+    this.typOrmRepository = dataSource.getRepository(TrackEntity);
+    this.baseRepository = new BaseRepositoryImpl<TrackEntity>(
+      dataSource,
+      TrackEntity,
+    );
   }
 }
 ```
 
-### 7.4 Method Implementation Pattern
+### 7.5 Method Implementation Pattern
+
+**Using BaseRepositoryImpl for generic CRUD**:
 
 ```typescript
+// Generic findById using BaseRepositoryImpl
 async findById(id: string): Promise<Track | null> {
-  const entity = await this.repository.findOne({ where: { id } });
+  const entity = await this.baseRepository.findById(id);
   return entity ? this.mapper.toDomain(entity) : null;
 }
 
+// Generic findAll using BaseRepositoryImpl
+async findAll(limit: number, offset: number): Promise<[Track[], number]> {
+  const [entities, total] = await this.baseRepository.findAll(offset, limit);
+  return [this.mapper.toDomainArray(entities), total];
+}
+
+// Generic create using BaseRepositoryImpl
 async create(track: Partial<Track>): Promise<Track> {
   const entity = this.mapper.toEntity(track);
-  const saved = await this.repository.save(entity);
+  const saved = await this.baseRepository.create(entity);
   return this.mapper.toDomain(saved);
+}
+
+// Generic update using BaseRepositoryImpl
+async update(id: string, track: Partial<Track>): Promise<Track> {
+  const entity = this.mapper.toEntity(track);
+  const updated = await this.baseRepository.update(id, entity);
+  if (!updated) throw new Error('Track not found');
+  return this.mapper.toDomain(updated);
+}
+
+// Generic delete using BaseRepositoryImpl
+async delete(id: string): Promise<void> {
+  await this.baseRepository.delete(id);
+}
+
+// Custom domain-specific method
+async findByTitle(title: string): Promise<Track[]> {
+  const entities = await this.typOrmRepository.find({ where: { title } });
+  return this.mapper.toDomainArray(entities);
+}
+```
+
+### 7.6 BaseRepository vs BaseRepositoryImpl
+
+**BaseRepository** (`src/core/base/base.repository.ts`):
+
+- Abstract class with protected methods
+- Cannot be instantiated directly
+- Defines generic CRUD contract
+
+**BaseRepositoryImpl** (`src/core/base/base.repository.impl.ts`):
+
+- Concrete implementation of BaseRepository
+- Can be instantiated and used via composition
+- Accepts DataSource and Entity class in constructor
+
+```typescript
+// src/core/base/base.repository.impl.ts
+@Injectable()
+export class BaseRepositoryImpl<
+  T extends ObjectLiteral,
+> extends BaseRepository<T> {
+  constructor(
+    dataSource: DataSource,
+    private entityClass: new () => T,
+  ) {
+    super(dataSource);
+    this.repository = dataSource.getRepository(entityClass);
+  }
 }
 ```
 

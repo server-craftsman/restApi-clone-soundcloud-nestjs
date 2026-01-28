@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { configuration, envValidationSchema } from './config';
 import { DatabaseModule } from './database';
 import { StorageModule } from './storage';
+import { CoreModule } from './core';
 import { TracksModule } from './tracks';
 import { QueueModule } from './queue';
 import { MediaModule } from './media';
@@ -26,6 +27,7 @@ import { StationsModule } from './stations';
       load: [configuration],
       validationSchema: envValidationSchema,
     }),
+    CoreModule,
     DatabaseModule,
     QueueModule,
     StorageModule,
