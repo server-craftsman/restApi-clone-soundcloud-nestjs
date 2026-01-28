@@ -25,6 +25,7 @@
     "migration:run": "bun run typeorm migration:run",
     "migration:revert": "bun run typeorm migration:revert",
     "migration:show": "bun run typeorm migration:show",
+    "generate:module": "cross-env HYGEN_TMPLS=.hygen hygen module new",
     "prepare": "husky"
   },
   "dependencies": {
@@ -46,6 +47,7 @@
     "fluent-ffmpeg": "^2.1.3",
     "hbs": "^4.2.0",
     "husky": "^9.1.7",
+    "hygen": "^6.2.11",
     "ioredis": "^5.4.2",
     "joi": "^17.13.3",
     "lint-staged": "^16.2.7",
@@ -117,4 +119,4 @@
       "eslint --fix"
     ]
   }
-  }
+}
