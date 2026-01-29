@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Delete,
   Param,
   UseGuards,
@@ -18,7 +17,6 @@ import {
 import { HistoryService } from './history.service';
 import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../users/domain/user';
-import { HistoryDto } from './dto';
 import { BaseController } from '../core/base/base.controller';
 
 @ApiTags('History')
