@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { TrackDto } from '../../tracks/dto/track.dto';
 
 export class LikeDto {
   @ApiProperty()
@@ -12,4 +13,7 @@ export class LikeDto {
 
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty({ type: () => TrackDto, required: false })
+  track?: TrackDto;
 }

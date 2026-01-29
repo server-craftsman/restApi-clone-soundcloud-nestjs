@@ -180,6 +180,10 @@ export class TrackEntity {
   })
   licenseType!: LicenseType;
 
+  // Analytics
+  @Column({ name: 'view_count', type: 'bigint', default: 0 })
+  viewCount!: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

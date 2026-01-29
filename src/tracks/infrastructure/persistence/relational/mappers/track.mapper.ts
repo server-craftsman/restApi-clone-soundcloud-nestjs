@@ -56,6 +56,9 @@ export class TrackMapper {
       // Licensing
       licenseType: entity.licenseType,
 
+      // Analytics
+      viewCount: entity.viewCount,
+
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -134,6 +137,9 @@ export class TrackMapper {
     // Licensing
     if (domain.licenseType !== undefined)
       entity.licenseType = domain.licenseType;
+
+    // Analytics
+    if (domain.viewCount !== undefined) entity.viewCount = domain.viewCount;
 
     if (domain.createdAt) entity.createdAt = domain.createdAt;
     if (domain.updatedAt) entity.updatedAt = domain.updatedAt;

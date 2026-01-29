@@ -6,7 +6,9 @@ import {
   Param,
   UseGuards,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -17,11 +19,14 @@ import { FollowingService } from './following.service';
 import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../users/domain/user';
 import { FollowingDto } from './dto';
+import { BaseController } from '../core/base/base.controller';
 
 @ApiTags('Following')
 @Controller('following')
-export class FollowingController {
-  constructor(private readonly followingService: FollowingService) {}
+export class FollowingController extends BaseController {
+  constructor(private readonly followingService: FollowingService) {
+    super();
+  }
 
   @Post(':userId')
   @UseGuards(JwtAuthGuard)
@@ -31,14 +36,16 @@ export class FollowingController {
   async follow(
     @Param('userId') followingId: string,
     @CurrentUser() user: User,
-  ): Promise<FollowingDto> {
+    @Res() res: Response,
+  ): Promise<void> {
     const following = await this.followingService.follow(user.id, followingId);
-    return {
+    const dto: FollowingDto = {
       id: following.id,
       followerId: following.followerId,
       followingId: following.followingId,
       createdAt: following.createdAt,
     };
+    this.sendSuccess(res, dto, 'Following successful', 201);
   }
 
   @Delete(':userId')
@@ -49,8 +56,10 @@ export class FollowingController {
   async unfollow(
     @Param('userId') followingId: string,
     @CurrentUser() user: User,
+    @Res() res: Response,
   ): Promise<void> {
     await this.followingService.unfollow(user.id, followingId);
+    res.status(204).send();
   }
 
   @Get()
@@ -62,69 +71,75 @@ export class FollowingController {
     @CurrentUser() user: User,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
-  ) {
+    @Res() res: Response,
+  ): Promise<void> {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [following, total] = await this.followingService.getUserFollowing(
       user.id,
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: following,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    this.sendPaginated(res, following, total, page, pageSize);
   }
 
-  @Get('followers/:userId')
-  @ApiOperation({ summary: 'Get user followers' })
+  @Get('followers')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user followers' })
   @ApiResponse({ status: 200 })
   async getUserFollowers(
-    @Param('userId') userId: string,
+    @CurrentUser() user: User,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
-  ) {
+    @Res() res: Response,
+  ): Promise<void> {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [followers, total] = await this.followingService.getUserFollowers(
-      userId,
-      parseInt(limit),
-      parseInt(offset),
+      user.id,
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: followers,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    this.sendPaginated(res, followers, total, page, pageSize);
   }
 
-  @Get('check/:userId')
+  @Get('check')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Check if following' })
   @ApiResponse({ status: 200 })
   async isFollowing(
-    @Param('userId') followingId: string,
+    @Query('followingId') followingId: string,
     @CurrentUser() user: User,
-  ) {
+    @Res() res: Response,
+  ): Promise<void> {
     const isFollowing = await this.followingService.isFollowing(
       user.id,
       followingId,
     );
-    return { isFollowing };
+    this.sendSuccess(res, { isFollowing });
   }
 
-  @Get('stats/:userId')
-  @ApiOperation({ summary: 'Get user follow stats' })
+  @Get('stats')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user follow stats' })
   @ApiResponse({ status: 200 })
-  async getFollowStats(@Param('userId') userId: string) {
+  async getFollowStats(
+    @CurrentUser() user: User,
+    @Res() res: Response,
+  ): Promise<void> {
     const [followingCount, followersCount] = await Promise.all([
-      this.followingService.getFollowingCount(userId),
-      this.followingService.getFollowersCount(userId),
+      this.followingService.getFollowingCount(user.id),
+      this.followingService.getFollowersCount(user.id),
     ]);
-    return {
-      userId,
+    this.sendSuccess(res, {
+      userId: user.id,
       followingCount,
       followersCount,
-    };
+    });
   }
 }

@@ -50,6 +50,7 @@ export class FollowingRepository extends FollowingRepositoryAbstract {
   ): Promise<[Following[], number]> {
     const [entities, total] = await this.repository.findAndCount({
       where: { followerId: userId },
+      relations: ['follower', 'following'],
       take: limit,
       skip: offset,
       order: { createdAt: 'DESC' },
@@ -64,6 +65,7 @@ export class FollowingRepository extends FollowingRepositoryAbstract {
   ): Promise<[Following[], number]> {
     const [entities, total] = await this.repository.findAndCount({
       where: { followingId: userId },
+      relations: ['follower', 'following'],
       take: limit,
       skip: offset,
       order: { createdAt: 'DESC' },

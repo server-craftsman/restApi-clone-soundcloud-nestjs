@@ -7,7 +7,10 @@ import {
   Body,
   UseGuards,
   Query,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -18,11 +21,14 @@ import { StationsService } from './stations.service';
 import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../users/domain/user';
 import { StationDto, CreateStationDto, AddTrackDto } from './dto';
+import { BaseController } from '../core/base/base.controller';
 
 @ApiTags('Stations')
 @Controller('stations')
-export class StationsController {
-  constructor(private readonly stationsService: StationsService) {}
+export class StationsController extends BaseController {
+  constructor(private readonly stationsService: StationsService) {
+    super();
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -32,31 +38,37 @@ export class StationsController {
   async createStation(
     @Body() dto: CreateStationDto,
     @CurrentUser() user: User,
-  ): Promise<StationDto> {
+    @Res() res: Response,
+  ) {
     const station = await this.stationsService.createStation(user.id, dto);
-    return {
-      id: station.id,
-      userId: station.userId,
-      title: station.title,
-      description: station.description,
-      likedCount: station.likedCount,
-      createdAt: station.createdAt,
-    };
+    return this.sendSuccess(
+      res,
+      {
+        id: station.id,
+        userId: station.userId,
+        title: station.title,
+        description: station.description,
+        likedCount: station.likedCount,
+        createdAt: station.createdAt,
+      },
+      'Station created successfully',
+      HttpStatus.CREATED,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get station' })
   @ApiResponse({ status: 200, type: StationDto })
-  async getStation(@Param('id') id: string): Promise<StationDto> {
+  async getStation(@Param('id') id: string, @Res() res: Response) {
     const station = await this.stationsService.getStation(id);
-    return {
+    return this.sendSuccess(res, {
       id: station.id,
       userId: station.userId,
       title: station.title,
       description: station.description,
       likedCount: station.likedCount,
       createdAt: station.createdAt,
-    };
+    });
   }
 
   @Get()
@@ -68,18 +80,17 @@ export class StationsController {
     @CurrentUser() user: User,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
+    @Res() res: Response,
   ) {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [stations, total] = await this.stationsService.getUserStations(
       user.id,
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: stations,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    return this.sendPaginated(res, stations, total, page, pageSize);
   }
 
   @Get('popular/list')
@@ -88,29 +99,30 @@ export class StationsController {
   async getPopularStations(
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
+    @Res() res: Response,
   ) {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [stations, total] = await this.stationsService.getPopularStations(
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: stations,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    return this.sendPaginated(res, stations, total, page, pageSize);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete station' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 200 })
   async deleteStation(
     @Param('id') id: string,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ) {
     await this.stationsService.deleteStation(id, user.id);
+    return this.sendSuccess(res, null, 'Station deleted successfully');
   }
 
   @Post(':id/tracks')
@@ -122,11 +134,18 @@ export class StationsController {
     @Param('id') stationId: string,
     @Body() dto: AddTrackDto,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ) {
     await this.stationsService.addTrackToStation(
       stationId,
       dto.trackId,
       user.id,
+    );
+    return this.sendSuccess(
+      res,
+      null,
+      'Track added to station successfully',
+      HttpStatus.CREATED,
     );
   }
 
@@ -134,17 +153,19 @@ export class StationsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remove track from station' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 200 })
   async removeTrack(
     @Param('id') stationId: string,
     @Param('trackId') trackId: string,
     @CurrentUser() user: User,
-  ): Promise<void> {
+    @Res() res: Response,
+  ) {
     await this.stationsService.removeTrackFromStation(
       stationId,
       trackId,
       user.id,
     );
+    return this.sendSuccess(res, null, 'Track removed from station');
   }
 
   @Get(':id/tracks')
@@ -154,17 +175,16 @@ export class StationsController {
     @Param('id') stationId: string,
     @Query('limit') limit: string = '10',
     @Query('offset') offset: string = '0',
+    @Res() res: Response,
   ) {
+    const pageSize = parseInt(limit);
+    const pageOffset = parseInt(offset);
     const [tracks, total] = await this.stationsService.getStationTracks(
       stationId,
-      parseInt(limit),
-      parseInt(offset),
+      pageSize,
+      pageOffset,
     );
-    return {
-      data: tracks,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    };
+    const page = Math.floor(pageOffset / pageSize) + 1;
+    return this.sendPaginated(res, tracks, total, page, pageSize);
   }
 }

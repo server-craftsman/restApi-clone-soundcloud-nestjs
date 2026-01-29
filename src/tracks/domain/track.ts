@@ -56,6 +56,9 @@ export interface Track {
   // Licensing
   licenseType: LicenseType;
 
+  // Analytics
+  viewCount: number; // Track view/play count
+
   createdAt: Date;
   updatedAt: Date;
 }

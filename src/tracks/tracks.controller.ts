@@ -302,9 +302,11 @@ export class TracksController extends BaseController {
   async stream(
     @Param('id') id: string,
     @Headers('range') range: string | undefined,
+    @CurrentUser() user: User | null,
     @Res() res: Response,
   ) {
-    const payload = await this.tracksService.buildStream(id, range);
+    const userId = user?.id;
+    const payload = await this.tracksService.buildStream(id, range, userId);
     const statusCode = range ? 206 : 200;
     const contentLength = payload.end - payload.start + 1;
 

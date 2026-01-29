@@ -50,6 +50,7 @@ export class LikeRepository extends LikeRepositoryAbstract {
   ): Promise<[Like[], number]> {
     const [entities, total] = await this.repository.findAndCount({
       where: { userId },
+      relations: ['track'],
       take: limit,
       skip: offset,
       order: { createdAt: 'DESC' },
